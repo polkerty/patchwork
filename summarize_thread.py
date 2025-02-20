@@ -2,6 +2,8 @@ from dotenv import load_dotenv
 import requests
 import os
 from scrape import scrape_text_from_div
+from datetime import datetime
+import json
 
 load_dotenv()
 
@@ -32,10 +34,75 @@ def explain_thread(thread_id):
     url = f"https://www.postgresql.org/message-id/flat/{thread_id}"
     text = scrape_text_from_div(url, "pgContentWrap")
 
-    print(text)
+    prompt = f'''
+        You are an intelligent database developer and community manager. You are to be given a mailing list thread which will contain
+        a series of emails discussing a particular proposed patch to the Postgresql database. You should read the full thread and note the following:
 
+        1. What is the purpose of the proposed patch or feature, stated briefly but precisely in 1-3 sentences? 
+            This will usually be laid out in the first email, but take into account any
+            relevant changes agreed on in later emails.
+        2. What is the state of the discussion? This should correspond to one of the following enums:
+            * WAITING_ON_AUTHOR (that is, changes have  been requested from the author, and we are still waiting for the author to follow up); 
+            * DONE (the patch has been committed)
+            * WAITING_FOR_REVIEW (the author is waiting on additional feedback to proceed)
+            * LACKS_SUPPORT (there is strong pushback on the overall nature or purpose of the patch, and there is no resolution to that pushback)
+        3. In addition, consider the timestamps of the latest developments on the thread, relative to the current date ({datetime.now()}). If there is an active
+            discussion over the last few weeks, classify the thread as ACTIVE, otherwise (if it appears that discussion has petered off, without
+            much ongoing discussion or activity, particularly on the part of the original author) classify the thread as INACTIVE.
+        4. What is the overall complexity of the feature or change? Imagine you are trying to rate this for the benefit of a code reviewer. 
+            Rate the complexity on a scale from 1 to 5 where:
+            * 1 is, perhaps, a change to a comment or other non-functional adjustment, and 
+            * 2 is a small functional change, perhaps a minor adjustment to a single function;
+            * 3 is still a relatively small feature but probably involves changing multiple files and functions.
+            * 4 is a medium-size change that requires substantial understanding of postgres internals to review. It may interact with key
+                parts of the database like the WAL, but is still more of an enhancement than a foundational refactor.
+            * 5 is a deep refactor of a fundamental system or a major new feature.  
+        5. In one or two sentences, what is the biggest issue or question currently outstanding? If this is not  relevant (for example, the proposal
+            has already been committed), this can just be "N/A".
 
+        After you review the mailing list below, please respond with a JSON object in the following format, corresponding to the 4 categories above:
+
+        {{
+            "summary": "latest summary of proposal",
+            "status": "one of WAITING_ON_AUTHOR|DONE|WAITING_FOR_REVIEW|LACKS_SUPPORT",
+            "activity": "one of ACTIVE|INACTIVE",
+            "complexity": <a number from 1 to 5>,
+            "problem": "the key issue currently being discussed in the thread, if any" 
+
+        }}
+
+        Here is the test of the mailing list:
+
+        { text }
+
+        -- 
+
+        Now that you have read the thread, please respond with a JSON object as requested above, in the following format:
+
+        {{
+            "summary": "latest summary of proposal",
+            "status": "one of WAITING_ON_AUTHOR|DONE|WAITING_FOR_REVIEW|LACKS_SUPPORT",
+            "activity": "one of ACTIVE|INACTIVE",
+            "complexity": <a number from 1 to 5>,
+            "problem": "the key issue currently being discussed in the thread, if any" 
+        }}
+
+        Respond ONLY with JSON, with no additional characters or text, so we can parse the response. The first character of your output should be {{,
+        and the last character should be }}. Do NOT include any backticks around the JSON or additional annotation indicating the response is JSON,
+        since we can't parse that.
+
+    '''
+
+    summary = prompt_gemini(prompt)
+
+    try:
+        parsed = json.loads(summary)
+        return parsed
+    except:
+        print(summary)
+        raise ValueError("Unable to parse LLM response as JSON")
 
 
 if __name__ == '__main__':
     explanation = explain_thread("b8a67d6dd34fe5e1b61272d11d40e5f576a00a0a.camel%40j-davis.com")
+    print(explanation)
