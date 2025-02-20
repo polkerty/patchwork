@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import requests
 import os
+from scrape import scrape_text_from_div
 
 load_dotenv()
 
@@ -27,11 +28,14 @@ def prompt_gemini(prompt):
 
 
 
-def explain_thread():
+def explain_thread(thread_id):
+    url = f"https://www.postgresql.org/message-id/flat/{thread_id}"
+    text = scrape_text_from_div(url, "pgContentWrap")
+
+    print(text)
 
 
-    pass
+
 
 if __name__ == '__main__':
-    q = prompt_gemini("What is most people's favorite color? Answer with a single word, the color, and do your best to pick the one right answer.")
-    print(q)
+    explanation = explain_thread("b8a67d6dd34fe5e1b61272d11d40e5f576a00a0a.camel%40j-davis.com")
