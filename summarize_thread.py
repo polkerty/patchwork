@@ -61,10 +61,12 @@ def explain_thread(thread_id):
             * 5 is a deep refactor of a fundamental system or a major new feature.  
         5. In one or two sentences, what is the biggest issue or question currently outstanding? If this is not  relevant (for example, the proposal
             has already been committed), this can just be "N/A".
-        6. Based on your subjective review of the mailing list thread, do you believe it would be a good use of time for a reviewer to spend some time
+        6. Based on your subjective review of the mailing list thread, do you believe it would be a good use of time for a NEW reviewer to spend some time
             reviewing and providing feedback? You might answer "NO" if it appears the author had not been responding, if substantial problems
-            have already been pointed out, or for any other reason. On the other hand, if the patch appears to be reasonable and mostly
-            just needs someone to continue to review it, you would reply "YES".  
+            have already been pointed out, if there is already a reviewer who appears actively engaged, or for any other reason. 
+            On the other hand, if the patch appears to be reasonable and mostly
+            just needs someone to continue to review it, and there is no reviewer who is still actively engaged,
+            you would reply "YES".  
 
         After you review the mailing list below, please respond with a JSON object in the following format, corresponding to the 4 categories above:
 
@@ -74,7 +76,7 @@ def explain_thread(thread_id):
             "activity": "one of ACTIVE|INACTIVE",
             "complexity": <a number from 1 to 5>,
             "problem": "the key issue currently being discussed in the thread, if any",
-            "wouldBenefitFromReview": "YES|NO"
+            "wouldBenefitFromNewReviewer": "YES|NO"
 
         }}
 
@@ -92,7 +94,7 @@ def explain_thread(thread_id):
             "activity": "one of ACTIVE|INACTIVE",
             "complexity": <a number from 1 to 5>,
             "problem": "the key issue currently being discussed in the thread, if any",
-            "wouldBenefitFromReview": "YES|NO"
+            "wouldBenefitFromNewReviewer": "YES|NO"
         }}
 
         Respond ONLY with JSON, with no additional characters or text, so we can parse the response. The first character of your output should be {{,
