@@ -5,6 +5,7 @@ from cache import cache_results
 
 # Scraping the mailing list 
 
+@cache_results()
 def scrape_text_from_div(url, id):
     response = requests.get(url)
     
