@@ -16,7 +16,7 @@ def prompt_gemini(prompt):
     if not api_key:
         raise ValueError("Must provide GEMINI_API_KEY env variable")
    
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
    
     res = requests.post(url, 
         json={
