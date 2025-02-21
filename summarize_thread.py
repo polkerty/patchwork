@@ -5,6 +5,8 @@ from scrape import scrape_text_from_div
 from datetime import datetime
 import json
 from pprint import pprint
+from cache import cache_results
+import re
 
 load_dotenv()
 
@@ -29,8 +31,20 @@ def prompt_gemini(prompt):
 
     return ans
 
+# Gemini loves wrapping its JSON in a "```json ```", no matter what we tell it, so try stripping this out if it's present.
+def clean_gemini_json(json_string: str):
+    # Regular expression to detect JSON wrapped with backticks and json indicator
+    match = re.search(r'^```json\n(.*)\n```$', json_string, re.DOTALL)
+    
+    # If wrapped, extract the inner JSON part
+    if match:
+        json_string = match.group(1)
+    
+    # Parse the JSON and return as a dictionary
+    return json.loads(json_string)
 
 
+@cache_results()
 def explain_thread(thread_id):
     url = f"https://www.postgresql.org/message-id/flat/{thread_id}"
     text = scrape_text_from_div(url, "pgContentWrap")
@@ -108,7 +122,7 @@ def explain_thread(thread_id):
     summary = prompt_gemini(prompt)
 
     try:
-        parsed = json.loads(summary)
+        parsed = clean_gemini_json(summary)
         return parsed
     except:
         print(summary)

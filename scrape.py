@@ -46,9 +46,9 @@ def get_patch_info(patch_id):
     url = f'https://commitfest.postgresql.org/patch/{patch_id}/'
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
-
+    
+    # We will extract the patches recursively from these later on
     message_ids = _helper_get_patch_message_ids(soup)
-
 
     return {
         "patch_id": patch_id,
