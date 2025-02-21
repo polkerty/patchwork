@@ -68,7 +68,7 @@ def explain_thread(thread_id):
             not on the author, unless the latest message is a promise from the author to follow up with additional changes.
             Most of the time, if the latest message contains patches for review, then we are waiting for a reviewer, not for the author, 
             as well.
-            
+
         3. In addition, consider the timestamps of the latest developments on the thread, relative to the current date ({datetime.now()}). If there is an active
             discussion over the last few weeks, classify the thread as ACTIVE, otherwise (if it appears that discussion has petered off, without
             much ongoing discussion or activity, particularly on the part of the original author) classify the thread as INACTIVE.
@@ -82,12 +82,18 @@ def explain_thread(thread_id):
             * 5 is a deep refactor of a fundamental system or a major new feature.  
         5. In one or two sentences, what is the biggest issue or question currently outstanding? If this is not  relevant (for example, the proposal
             has already been committed), this can just be "N/A".
-        6. Based on your subjective review of the mailing list thread, do you believe it would be a good use of time for a NEW reviewer to spend some time
+        6. Based on your subjective review of the mailing list thread, do you believe it would be a good use of time for an ADDITIONAL reviewer to spend some time
             reviewing and providing feedback? You might answer "NO" if it appears the author had not been responding, if substantial problems
             have already been pointed out, if there is already a reviewer who appears actively engaged, or for any other reason. 
             On the other hand, if the patch appears to be reasonable and mostly
             just needs someone to continue to review it, and there is no reviewer who is still actively engaged,
             you would reply "YES".  
+
+            Just to be clear on this point, if there are already one or more reviewers who are actively providing feedback, especially if we 
+            are currently waiting on the author instead of a reviewer, we should most likely say "NO" here. However, if the feature appears
+            especially complex and existing reviewers have not engaged thoroughly with it, perhaps only giving nitpicks instead of deep reviews
+            on the substance, you might respond "YES" here. Also, if we are waiting for a review on the most recent patches
+            and it's been more than a few days, we should probably say "YES".  
 
         After you review the mailing list below, please respond with a JSON object in the following format, corresponding to the 4 categories above:
 
