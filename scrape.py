@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+from cache import cache_results
 
 # Scraping the mailing list 
 
@@ -40,6 +41,7 @@ def extract_commitfest_patch_ids(url):
     return ids
 
 # Scraping the Patch page
+@cache_results()
 def get_patch_info(patch_id):
     url = f'https://commitfest.postgresql.org/patch/{patch_id}/'
     response = requests.get(url)

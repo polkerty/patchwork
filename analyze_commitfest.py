@@ -1,6 +1,8 @@
 
 from scrape import extract_commitfest_patch_ids, get_patch_info
+from worker import run_jobs
 from pprint import pprint
+
 
 def analyze_commitfest(id):  
     #1. Scrape the list of patches.
@@ -9,8 +11,8 @@ def analyze_commitfest(id):
 
     print(patch_ids)
 
-    patch_info = get_patch_info(patch_ids[0])
-
+    # Scrape patches  in parallel.
+    patch_info = run_jobs(get_patch_info, patch_ids, 5)
     pprint(patch_info)
 
 
