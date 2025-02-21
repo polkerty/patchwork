@@ -62,6 +62,13 @@ def explain_thread(thread_id):
             * DONE (it has been confirmed that the patch has been committed)
             * WAITING_FOR_REVIEW (the author is waiting on additional feedback to proceed)
             * LACKS_SUPPORT (there is strong pushback on the overall nature or purpose of the patch, and there is no resolution to that pushback)
+
+            To help you distinguish between WAITING_ON_AUTHOR and WAITING_FOR_REVIEW, take special note of the email that sent the first
+            message and the email that sent the most recent message. If they are the same, then likely we're waiting on a reviewer,
+            not on the author, unless the latest message is a promise from the author to follow up with additional changes.
+            Most of the time, if the latest message contains patches for review, then we are waiting for a reviewer, not for the author, 
+            as well.
+            
         3. In addition, consider the timestamps of the latest developments on the thread, relative to the current date ({datetime.now()}). If there is an active
             discussion over the last few weeks, classify the thread as ACTIVE, otherwise (if it appears that discussion has petered off, without
             much ongoing discussion or activity, particularly on the part of the original author) classify the thread as INACTIVE.
