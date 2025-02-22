@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import requests
 import os
-from scrape import scrape_text_from_div, _helper_extract_attachment_links
+from scrape import parse_thread, _helper_extract_attachment_links
 from datetime import datetime
 import json
 from pprint import pprint
@@ -45,12 +45,9 @@ def clean_gemini_json(json_string: str):
 
 @cache_results()
 def analyze_thread(thread_id):
-    url = f"https://www.postgresql.org/message-id/flat/{thread_id}"
-    text = scrape_text_from_div(url, "pgContentWrap")
+    text, attachment_links = parse_thread(thread_id)
 
     explanation = explain_thread(text, thread_id)
-
-    attachment_links = _helper_extract_attachment_links(text)
 
     return {
         "explanation": explanation,

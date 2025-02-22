@@ -6,7 +6,10 @@ from cache import cache_results
 # Scraping the mailing list 
 
 @cache_results()
-def scrape_text_from_div(url, id):
+def parse_thread(id):
+    url = f'https://www.postgresql.org/message-id/flat/{id}'
+    main_text_id = 'pgContentWrap'
+
     response = requests.get(url)
     
     if response.status_code != 200:
@@ -16,13 +19,29 @@ def scrape_text_from_div(url, id):
     soup = BeautifulSoup(response.text, "html.parser")
     
     # Find the div with the given id name
-    div = soup.find("div", id=id)
+    div = soup.find("div", id=main_text_id)
     
     if div:
-        return div.get_text(separator="\n", strip=True)  # Extracts all text recursively
+        text = div.get_text(separator="\n", strip=True)  # Extracts all text recursively
     else:
         raise ValueError(f"No div with id '{id}' found.")
     
+    attachment_tables = soup.find_all("table", class_="message-attachments")
+
+    if attachment_tables:
+        # 2. Select the last table
+        last_table = attachment_tables[-1]
+        
+        # 3. Find all <a> tags (with href) in this table
+        anchors = last_table.find_all("a", href=True)
+
+        links = [anchor["href"] for anchor in anchors]
+    else:
+        links = []
+
+    return text, links
+
+
 def _helper_extract_attachment_links(text):
     
     soup = BeautifulSoup(text, "html.parser")
