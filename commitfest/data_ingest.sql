@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS thread_summaries;
+DROP TABLE IF EXISTS thread_summaries_2;
 
 CREATE TABLE thread_summaries_2 (
     id TEXT PRIMARY KEY,
