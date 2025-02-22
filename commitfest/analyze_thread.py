@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import requests
 import os
-from scrape import scrape_text_from_div
+from scrape import scrape_text_from_div, _helper_extract_attachment_links
 from datetime import datetime
 import json
 from pprint import pprint
@@ -43,11 +43,23 @@ def clean_gemini_json(json_string: str):
     # Parse the JSON and return as a dictionary
     return json.loads(json_string)
 
-
 @cache_results()
-def explain_thread(thread_id):
+def analyze_thread(thread_id):
     url = f"https://www.postgresql.org/message-id/flat/{thread_id}"
     text = scrape_text_from_div(url, "pgContentWrap")
+
+    explanation = explain_thread(text, thread_id)
+
+    attachment_links = _helper_extract_attachment_links(text)
+
+    return {
+        "explanation": explanation,
+        "attachment_links": attachment_links
+    }
+    
+
+@cache_results(1)
+def explain_thread(text, thread_id): # thread_id argument used for cacheing
 
     prompt = f'''
         You are an intelligent database developer and community manager. You are to be given a mailing list thread which will contain

@@ -3,15 +3,19 @@ import json
 import functools
 
 CACHE_DIR = ".cache"
-def cache_results():
+def cache_results(key=None):
     """Decorator to cache function results in a specified directory."""
     def decorator(func):
         os.makedirs(CACHE_DIR, exist_ok=True)
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            if not key:
+                suffix = f'{args}_{kwargs}'
+            else:
+                suffix = f'{list(args)[key]}'
             # Generate cache file path based on function name and arguments
-            cache_key = f"{func.__name__}_{args}_{kwargs}.json"
+            cache_key = f"{func.__name__}_{suffix}.json"
             cache_key = cache_key.replace("/", "_")  # Sanitize filenames
             cache_file = os.path.join(CACHE_DIR, cache_key)
 

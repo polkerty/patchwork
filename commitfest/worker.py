@@ -12,6 +12,7 @@ def run_jobs(fn, payloads, max_workers=5):
             try:
                 results[args] = job.result()
             except Exception as e:
+                print(e)
                 results[args] = {"error": str(e)}
                 errors += 1
 

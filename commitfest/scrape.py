@@ -22,6 +22,22 @@ def scrape_text_from_div(url, id):
         return div.get_text(separator="\n", strip=True)  # Extracts all text recursively
     else:
         raise ValueError(f"No div with id '{id}' found.")
+    
+def _helper_extract_attachment_links(text):
+    
+    soup = BeautifulSoup(text, "html.parser")
+    attachment_tables = soup.find_all("table", class_="message-attachments")
+
+    if attachment_tables:
+        # 2. Select the last table
+        last_table = attachment_tables[-1]
+        
+        # 3. Find all <a> tags (with href) in this table
+        links = last_table.find_all("a", href=True)
+
+        return [link["href"] for link in links]
+    else:
+        return []
 
 # Scraping the commitfest page
 def extract_commitfest_patch_ids(url):
@@ -72,5 +88,3 @@ def _helper_get_patch_message_ids(soup):
             ids.append(match.group(1)) 
 
     return list(set(ids))
-
-
