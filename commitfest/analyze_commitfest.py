@@ -25,7 +25,7 @@ def analyze_commitfest(id):
     attachment_links = {id: { "links": thread["attachment_links"] } for id, thread in threads.items()}
 
     # download attachments
-    links_flattened = [ link for link_obj in attachment_links.values() for link_list in link_obj.values() for link in link_list ]
+    links_flattened = [ (link, message_id) for message_id, link_obj in attachment_links.items() for link_list in link_obj.values() for link in link_list ]
     attachment_stats  = run_jobs(analyze_attachment, links_flattened, max_workers=5)
     attachment_stats_flattened = { f'{link}/{stats["file"]}': stats for link, files in attachment_stats.items() for stats in files }
 

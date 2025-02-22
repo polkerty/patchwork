@@ -2,16 +2,18 @@ import requests
 from cache import cache_results
 
 @cache_results()
-def analyze_attachment(link):
+def analyze_attachment(link_and_message_id):
+
+    link, message_id = link_and_message_id
     absolute_url = 'https://postgresql.org/' + link
     data = requests.get(absolute_url).text
 
-    stats = parse_git_patch(data, link)
+    stats = parse_git_patch(data, link, message_id)
 
     return stats
 
 
-def parse_git_patch(patch_content, diff_link):
+def parse_git_patch(patch_content, diff_link, message_id):
     """
     Parse a Git patch string and extract file-level statistics: filename,
     number of additions, and number of deletions.
@@ -22,7 +24,8 @@ def parse_git_patch(patch_content, diff_link):
         'file': <filename (relative)>,
         'additions': <number of added lines>,
         'deletions': <number of deleted lines>,
-        'link': <url off diff file itself>
+        'link': <url of diff file itself>
+        'message_id': <id of source thread>
         }
     """
     # Split the patch by lines
@@ -45,7 +48,8 @@ def parse_git_patch(patch_content, diff_link):
                     'file': current_file,
                     'additions': additions,
                     'deletions': deletions,
-                    'link': diff_link
+                    'link': diff_link,
+                    'message_id': message_id,
                 })
 
             # Reset counters for the new file
@@ -87,7 +91,8 @@ def parse_git_patch(patch_content, diff_link):
             'file': current_file,
             'additions': additions,
             'deletions': deletions,
-            'link': diff_link
+            'link': diff_link,
+            'message_id': message_id,
         })
 
     return files_changed
