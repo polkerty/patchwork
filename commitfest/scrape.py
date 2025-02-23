@@ -94,11 +94,6 @@ def get_patch_info(patch_id):
     }
 
 def _helper_get_patch_message_ids(soup):
-    # Find the table row where <th> contains "Emails"
-
-    message_ids = set()
-
-    # Regex pattern to match the desired links
     pattern = re.compile(r'https://www.postgresql.org/message-id/flat/(.*)')
 
     # Find all links that match the pattern
