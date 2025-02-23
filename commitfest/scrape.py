@@ -85,10 +85,12 @@ def get_patch_info(patch_id):
     
     # We will extract the patches recursively from these later on
     message_ids = _helper_get_patch_message_ids(soup)
+    name = _helper_get_patch_name(soup)
 
     return {
         "patch_id": patch_id,
         "message_ids": message_ids,
+        "patch_name": name
     }
 
 def _helper_get_patch_message_ids(soup):
@@ -107,3 +109,10 @@ def _helper_get_patch_message_ids(soup):
             ids.append(match.group(1)) 
 
     return list(set(ids))
+
+def _helper_get_patch_name(soup):
+    title = soup.find_one('h1')
+    
+    if title:
+        return title.get_text()
+    return 'Title not found'
