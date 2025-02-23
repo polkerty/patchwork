@@ -53,7 +53,7 @@
             // 2. decorate with message threads; this is a fresh clone
             for ( const patch of patches ) {
                 patch.commitfest = {...STATE.patchById[patch.patch]};
-                patch.threadList = STATE.threadsOfPatch[patch.patch];
+                patch.threads = STATE.threadsOfPatch[patch.patch].map(thread => STATE.byThread[thread]);
             }
 
 
@@ -100,9 +100,23 @@
                 threadsOfPatch[patch].push(message);
             }
 
+            const byThread = {};
+            for ( const thread of DATA.threadSummaries) {
+                byThread[thread.id] = thread;
+            }
+            for ( const thread of DATA.threadStats ) {
+                if ( !byThread[thread.message_id]) {
+                    // whoops...
+                    console.log("No summary for thread: " + thread.message_id);
+                    continue;
+                }
+                byThread[thread.message_id].stats = thread;
+            }
+
             return {
                 patchById,
-                threadsOfPatch
+                threadsOfPatch,
+                byThread
             }
         }
 
