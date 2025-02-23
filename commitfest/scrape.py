@@ -75,10 +75,12 @@ def _helper_extract_from_and_date(soup):
         return (from_name, date_str)
 
     results = []
+
     tables = soup.find_all('table', class_='table-sm table-responsive message-header')
     for t in tables:
         info = parse_email_header(t)
-        results.append(info)
+        if len(info[0]):
+            results.append(info)
     return results
 
 

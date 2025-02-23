@@ -43,7 +43,6 @@ def clean_gemini_json(json_string: str):
     # Parse the JSON and return as a dictionary
     return json.loads(json_string)
 
-@cache_results()
 def analyze_thread(thread_id):
     text, attachment_links, from_and_date_list = parse_thread(thread_id)
 
