@@ -45,13 +45,24 @@ def clean_gemini_json(json_string: str):
 
 @cache_results()
 def analyze_thread(thread_id):
-    text, attachment_links = parse_thread(thread_id)
+    text, attachment_links, from_and_date_list = parse_thread(thread_id)
 
     explanation = explain_thread(text, thread_id)
 
+    last_activity = from_and_date_list[-1][1] # given that there is a mailing thread at all, there must be at least one entry.
+    author = from_and_date_list[0][0]
+    reviewer_list = list(set([name for name, date in from_and_date_list if name != author]))
+
+    stats = {
+        "last_activity": last_activity,
+        "author": author,
+        "reviewer_list": json.dumps(reviewer_list) # for frontend use
+    }
+
     return {
         "explanation": explanation,
-        "attachment_links": attachment_links
+        "attachment_links": attachment_links,
+        "stats": stats
     }
     
 

@@ -39,7 +39,48 @@ def parse_thread(id):
     else:
         links = []
 
-    return text, links
+    from_and_date_list = _helper_extract_from_and_date(soup)
+
+    return text, links, from_and_date_list
+
+def _helper_extract_from_and_date(soup):
+    """
+    Given a BeautifulSoup object of the entire HTML document,
+    find all message-header tables and extract the From name and Date
+    from each table. Returns a list of tuples: [(from_name, date_str), ...].
+    """
+
+    def parse_email_header(table):
+        """
+        Given a BeautifulSoup <table> containing an email header,
+        return a tuple (from_name, date_str).
+        """
+        from_th = table.find('th', string='From:')
+        from_td = from_th.find_next('td') if from_th else None
+        from_text = from_td.get_text(strip=True) if from_td else ""
+
+        # Extract the name from something like:
+        #   "\"Hayato Kuroda (Fujitsu)\" <kuroda(dot)hayato(at)fujitsu(dot)com>"
+        match = re.match(r'^"([^"]+)"', from_text)
+        if match:
+            from_name = match.group(1)
+        else:
+            # If no quotes found, split at '<'
+            from_name = from_text.split('<')[0].strip()
+
+        date_th = table.find('th', string='Date:')
+        date_td = date_th.find_next('td') if date_th else None
+        date_str = date_td.get_text(strip=True) if date_td else ""
+
+        return (from_name, date_str)
+
+    results = []
+    tables = soup.find_all('table', class_='table-sm table-responsive message-header')
+    for t in tables:
+        info = parse_email_header(t)
+        results.append(info)
+    return results
+
 
 
 def _helper_extract_attachment_links(text):
@@ -106,8 +147,8 @@ def _helper_get_patch_message_ids(soup):
     return list(set(ids))
 
 def _helper_get_patch_name(soup):
-    title = soup.find_one('h1')
+    title = soup.find('h1')
     
     if title:
-        return title.get_text()
+        return title.get_text(strip=True)
     return 'Title not found'

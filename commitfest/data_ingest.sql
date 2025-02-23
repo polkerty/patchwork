@@ -1,6 +1,6 @@
 BEGIN;
 
-DROP TABLE IF EXISTS thread_summaries;
+DROP TABLE IF EXISTS thread_summaries cascade;
 
 CREATE TABLE thread_summaries (
     id TEXT PRIMARY KEY,
@@ -14,7 +14,7 @@ CREATE TABLE thread_summaries (
 
 \copy thread_summaries FROM 'thread_summaries.csv' DELIMITER ',' CSV HEADER QUOTE '"' ESCAPE '\';
 
-DROP TABLE IF EXISTS attachment_stats;
+DROP TABLE IF EXISTS attachment_stats cascade;
 
 CREATE TABLE attachment_stats (
 
@@ -29,15 +29,28 @@ CREATE TABLE attachment_stats (
 \copy attachment_stats FROM 'attachment_stats.csv' DELIMITER ',' CSV HEADER QUOTE '"' ESCAPE '\';
 
 
-DROP TABLE IF EXISTS patch_message;
+DROP TABLE IF EXISTS patch_message cascade;
 
 CREATE TABLE patch_message (
     PATCH TEXT,
-    MESSAGE TEXT PRIMARY KEY
+    MESSAGE TEXT
 );
 
 
 \copy patch_message FROM 'message_patch.csv' DELIMITER ',' CSV HEADER QUOTE '"' ESCAPE '\';
+
+
+DROP TABLE IF EXISTS thread_stats cascade;
+
+CREATE TABLE thread_stats (
+    message_id text primary key,
+    last_activity timestamp,
+    author text,
+    reviewer_list json
+);
+
+
+\copy thread_stats FROM 'thread_stats.csv' DELIMITER ',' CSV HEADER;
 
 
 COMMIT;

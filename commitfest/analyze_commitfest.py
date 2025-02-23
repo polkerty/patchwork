@@ -22,6 +22,7 @@ def analyze_commitfest(id):
     threads = run_jobs(analyze_thread, message_ids, max_workers=5)
 
     thread_summaries = {id: thread["explanation"] for id, thread in threads.items()}
+    thread_stats = {id: thread["stats"] for id, thread in threads.items()}
     attachment_links = {id: { "links": thread["attachment_links"] } for id, thread in threads.items()}
 
     # download attachments
@@ -36,6 +37,7 @@ def analyze_commitfest(id):
     # Write patch and thread data to files for future analysis
     dict_to_csv(patch_info, "patches.csv")
     dict_to_csv(thread_summaries, "thread_summaries.csv")
+    dict_to_csv(thread_stats, "thread_stats.csv")
     dict_to_csv(attachment_links, "attachment_links.csv")
     dict_to_csv(attachment_stats_flattened, "attachment_stats.csv")
     dict_to_csv(message_of_patch, "message_patch.csv")
