@@ -1,6 +1,8 @@
-DROP TABLE IF EXISTS thread_summaries_2;
+BEGIN;
 
-CREATE TABLE thread_summaries_2 (
+DROP TABLE IF EXISTS thread_summaries;
+
+CREATE TABLE thread_summaries (
     id TEXT PRIMARY KEY,
     summary TEXT,
     status TEXT,
@@ -10,6 +12,22 @@ CREATE TABLE thread_summaries_2 (
     would_benefit_from_new_reviewer TEXT
 );
 
-TRUNCATE TABLE thread_summaries_2;
+\copy thread_summaries FROM 'thread_summaries.csv' DELIMITER ',' CSV HEADER QUOTE '"' ESCAPE '\';
 
-\copy thread_summaries_2 FROM 'thread_summaries.csv' DELIMITER ',' CSV HEADER QUOTE '"' ESCAPE '\';
+DROP TABLE IF EXISTS attachment_stats;
+
+CREATE TABLE attachment_stats (
+
+    ID TEXT PRIMARY KEY,
+    file TEXT,
+    additions INTEGER,
+    deletion INTEGER,
+    link TEXT,
+    message_id TEXT
+);
+
+TRUNCATE TABLE attachment_stats;
+
+\copy attachment_stats FROM 'attachment_stats.csv' DELIMITER ',' CSV HEADER QUOTE '"' ESCAPE '\';
+
+COMMIT;
