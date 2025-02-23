@@ -4,16 +4,19 @@
     <title>Experimental commitfest patch ranker</title>
     <script src="https://code.jquery.com/jquery-3.7.1.slim.js"
         integrity="sha256-UgvvN8vBkgO0luPSUl2s8TIlOSYRoGFAX4jlCIm9Adc=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
 </head>
 
 <body>
 
     <div id="main">
         <div id="controls">
-
+            <h2>Loading...</h2>
         </div>
         <div id="content">
-            <h2>Loading...</h2>
+        </div>
+        <div id="table">
 
         </div>
 
@@ -48,11 +51,11 @@
             // ranked according to their best match.
 
             // 1. get list
-            const patches = DATA.rankings.filter(x => x.reviewer === STATE.contributor).sort((a, b)=>b.sum - a.sum).map(x => ({ ...x}));
+            const patches = DATA.rankings.filter(x => x.reviewer === STATE.contributor).sort((a, b) => b.sum - a.sum).map(x => ({ ...x }));
 
             // 2. decorate with message threads; this is a fresh clone
-            for ( const patch of patches ) {
-                patch.commitfest = {...STATE.patchById[patch.patch]};
+            for (const patch of patches) {
+                patch.commitfest = { ...STATE.patchById[patch.patch] };
                 patch.threads = STATE.threadsOfPatch[patch.patch].map(thread => STATE.byThread[thread]);
             }
 
@@ -63,7 +66,7 @@
         function renderContent() {
             let html = '';
 
-            if ( !STATE.contributor) {
+            if (!STATE.contributor) {
                 html = '<h2>Please select your name to see your personalized patch review recommendations</h2>';
                 $("#content").html(html);
                 return;
@@ -75,6 +78,34 @@
             // for testing
             console.log(patchData);
             console.log(patchData[0]);
+            
+            let dataTable = new window.simpleDatatables.DataTable('#table', {
+                searchable: true,
+                fixedHeight: true,
+                // columns: [
+                //     // {
+                //     //     // select the fourth column ...
+                //     //     select: 3,
+                //     //     // ... let the instance know we have datetimes in it ...
+                //     //     type: "date",
+                //     //     // ... pass the correct datetime format ...
+                //     //     format: "YYYY/DD/MM",
+                //     //     // ... sort it ...
+                //     //     sort: "desc"
+                //     // }
+                // ],
+                data: {
+                    headings: [
+                        {
+                            text: "ID",
+                            data: "patch"
+                        }, 
+                    ],
+                    data: patchData
+                }
+
+
+            });
 
             $("#content").html(html);
         }
@@ -87,13 +118,13 @@
         function constructLookups() {
             // Various indexes to make certain things more efficient.
             const patchById = {};
-            for ( const patch of DATA.patches) {
+            for (const patch of DATA.patches) {
                 patchById[patch.patch_id] = patch;
-            } 
+            }
 
 
             const threadsOfPatch = {};
-            for ( const { patch, message } of DATA.patchMessage ) {
+            for (const { patch, message } of DATA.patchMessage) {
                 if (!threadsOfPatch[patch]) {
                     threadsOfPatch[patch] = [];
                 }
@@ -101,11 +132,11 @@
             }
 
             const byThread = {};
-            for ( const thread of DATA.threadSummaries) {
+            for (const thread of DATA.threadSummaries) {
                 byThread[thread.id] = thread;
             }
-            for ( const thread of DATA.threadStats ) {
-                if ( !byThread[thread.message_id]) {
+            for (const thread of DATA.threadStats) {
+                if (!byThread[thread.message_id]) {
                     // whoops...
                     console.log("No summary for thread: " + thread.message_id);
                     continue;
@@ -154,7 +185,7 @@
             // 2. Set up UX
             render();
 
-            setContributor({ target: { value: 'Robert Haas' }}); // for testing only
+            setContributor({ target: { value: 'Robert Haas' } }); // for testing only
 
         })();
     </script>
