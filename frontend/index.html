@@ -5,22 +5,44 @@
 
     <body>
         
-        <div class="main"></div>
+        <div id="main">
+            <div id="controls" >
+
+            </div>
+            <div id="content" >
+                <h2>Loading...</h2>
+            </div>
+
+        </div>
 
 
         <script>
 
-
-            (()=>{
+            (async ()=>{
                 // 1. Fetch principal data sources
+                const dataBaseURL = 'data/';
+                const [
+                    threadSummaries,
+                    contribIDF,
+                    patches,
+                    threadStats,
+                    patchMessage
+                ] = await Promise.all([
+                    'thread_summaries.json',
+                    'contrib_idf.json',
+                    'patches.json',
+                    'thread_stats.json',
+                    'thread_summaries.json',
 
-                AI-generated thread analysis (thread_summaries)
-                Contributor-tailored ranking of relevant patches (contrib_idf)
-                The name of each patch (patches) which we could augment with more commitfest patch data if desired
-                Useful stats from message threads like last date, reviewers, etc (thread_stats) 
+                ].map(url => fetch(dataBaseURL + url)))
 
+                // AI-generated thread analysis (thread_summaries)
+                // Contributor-tailored ranking of relevant patches (contrib_idf)
+                // The name of each patch (patches) which we could augment with more commitfest patch data if desired
+                // Useful stats from message threads like last date, reviewers, etc (thread_stats) 
+                
 
-
+                // 2. Set up UX
 
             })();
         </script>
