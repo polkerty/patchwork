@@ -14,25 +14,29 @@ BEGIN
     step := REGEXP_REPLACE(raw_name, 'Author:', '', 'i');
 
     ----------------------------------------------------------------------
-    -- 2) Remove trailing email address in angle brackets.
-    --    e.g. "Foo Bar <foo@example.org>" -> "Foo Bar"
+    -- 2) Remove any angle-bracketed text, e.g. emails. 
     ----------------------------------------------------------------------
-    step := REGEXP_REPLACE(step, '<[^>]+>', '');
+    step := REGEXP_REPLACE(step, '<[^>]+>', '', 'g');
 
     ----------------------------------------------------------------------
-    -- 3) Convert accented characters to unaccented forms
-    --    (e.g. "Á" -> "A"). Requires the "unaccent" extension.
+    -- 3) Remove any parenthetical remarks, e.g. "(Pn Japan Fsip)" 
+    ----------------------------------------------------------------------
+    step := REGEXP_REPLACE(step, '\(.*?\)', ' ', 'g');
+
+    ----------------------------------------------------------------------
+    -- 4) Convert accented characters to unaccented forms 
+    --    (Requires "unaccent" extension).
     ----------------------------------------------------------------------
     step := unaccent(step);
 
     ----------------------------------------------------------------------
-    -- 4) Normalize spacing: collapse multiple spaces to one, and trim.
+    -- 5) Normalize spacing: collapse multiple spaces to one, and trim.
     ----------------------------------------------------------------------
     step := REGEXP_REPLACE(step, '\s+', ' ', 'g');
     step := btrim(step);
 
     ----------------------------------------------------------------------
-    -- 5) If there's exactly one comma, assume "Lastname, First..."
+    -- 6) If there's exactly one comma, assume "Lastname, First..."
     --    Then reorder to "First ... Last".
     ----------------------------------------------------------------------
     IF step ~ '^[^,]+,[^,]+$' THEN
@@ -45,7 +49,7 @@ BEGIN
     END IF;
 
     ----------------------------------------------------------------------
-    -- 6) Remove single-letter words (typically middle initials),
+    -- 7) Remove single-letter words, e.g. middle initials "O." 
     --    and initcap() each word.
     ----------------------------------------------------------------------
     WITH parts AS (
@@ -53,7 +57,6 @@ BEGIN
     )
     SELECT string_agg(
              CASE
-               -- Remove single-letter words (e.g. "O" or "O.")
                WHEN length(regexp_replace(word, '\W', '', 'g')) = 1 THEN ''
                ELSE initcap(word)
              END,
@@ -66,10 +69,12 @@ BEGIN
       ) t
       WHERE word <> '';
 
-    -- Final space cleanup
+    ----------------------------------------------------------------------
+    -- 8) Final space cleanup
+    ----------------------------------------------------------------------
     step := REGEXP_REPLACE(step, '\s+', ' ', 'g');
     step := btrim(step);
 
-    RETURN step;  -- Name only, no email
+    RETURN step;
 END;
 $$;
