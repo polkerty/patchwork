@@ -50,13 +50,23 @@
             // Prepare a list of patches for the currently-selected contributor, 
             // ranked according to their best match.
 
-            // 1. get list
-            const patches = DATA.rankings.filter(x => x.reviewer === STATE.contributor).sort((a, b) => b.sum - a.sum).map(x => ({ ...x }));
+            // 1. get all patches
+            const patches = DATA.patches.map(x => ({...x}));
 
-            // 2. decorate with message threads; this is a fresh clone
+            const rankings = 
+                Object.fromEntries(
+                    DATA.rankings.
+                        filter(x => x.reviewer === STATE.contributor).
+                        sort((a, b) => b.sum - a.sum).
+                        map(x => ({ ...x })).
+                        map(x => [x.patch, x])
+        );
+
+            // 2. decorate
             for (const patch of patches) {
-                patch.commitfest = { ...STATE.patchById[patch.patch] };
-                patch.threads = STATE.threadsOfPatch[patch.patch].map(thread => STATE.byThread[thread]);
+                patch.ranking = rankings[patch.patch_id];
+                patch.commitfest = { ...STATE.patchById[patch.patch_id] };
+                patch.threads = STATE.threadsOfPatch[patch.patch_id].map(thread => STATE.byThread[thread]);
             }
 
 
@@ -98,7 +108,11 @@
                     headings: [
                         {
                             text: "ID",
-                            data: "patch"
+                            data: "patch_id"
+                        }, 
+                        {
+                            text: "Name",
+                            data: "name"
                         }, 
                     ],
                     data: patchData
