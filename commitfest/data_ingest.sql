@@ -33,7 +33,7 @@ DROP TABLE IF EXISTS patch_message;
 
 CREATE TABLE patch_message (
     PATCH TEXT,
-    MESSAGE TEXT
+    MESSAGE TEXT PRIMARY KEY
 );
 
 
