@@ -39,6 +39,18 @@ CREATE TABLE patch_message (
 
 \copy patch_message FROM 'message_patch.csv' DELIMITER ',' CSV HEADER QUOTE '"' ESCAPE '\';
 
+DROP TABLE IF EXISTS patches cascade;
+
+CREATE TABLE patches (
+    id TEXT,
+    patch_id TEXT PRIMARY KEY,
+    message_ids TEXT,
+    name text
+);
+
+
+\copy patches FROM 'patches.csv' DELIMITER ',' CSV HEADER;
+
 
 DROP TABLE IF EXISTS thread_stats cascade;
 
