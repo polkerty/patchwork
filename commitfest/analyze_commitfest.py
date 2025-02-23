@@ -29,12 +29,16 @@ def analyze_commitfest(id):
     attachment_stats  = run_jobs(analyze_attachment, links_flattened, max_workers=5)
     attachment_stats_flattened = { f'{link}/{stats["file"]}': stats for link, files in attachment_stats.items() for stats in files }
 
+    # link message <> patch for tf-idf
+    message_of_patch = { patch_id: {"message_id": message_id} for patch_id, patch in patch_info.items() for message_id in patch['message_ids']}
+
     print(attachment_stats_flattened)
     # Write patch and thread data to files for future analysis
     dict_to_csv(patch_info, "patches.csv")
     dict_to_csv(thread_summaries, "thread_summaries.csv")
     dict_to_csv(attachment_links, "attachment_links.csv")
     dict_to_csv(attachment_stats_flattened, "attachment_stats.csv")
+    dict_to_csv(message_of_patch, "message_patch.csv")
 
 if __name__ == '__main__':
     analyze_commitfest(52)

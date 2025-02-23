@@ -26,8 +26,18 @@ CREATE TABLE attachment_stats (
     message_id TEXT
 );
 
-TRUNCATE TABLE attachment_stats;
-
 \copy attachment_stats FROM 'attachment_stats.csv' DELIMITER ',' CSV HEADER QUOTE '"' ESCAPE '\';
+
+
+DROP TABLE IF EXISTS patch_message;
+
+CREATE TABLE patch_message (
+    PATCH TEXT,
+    MESSAGE TEXT
+);
+
+
+\copy patch_message FROM 'message_patch.csv' DELIMITER ',' CSV HEADER QUOTE '"' ESCAPE '\';
+
 
 COMMIT;
