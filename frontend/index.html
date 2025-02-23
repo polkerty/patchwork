@@ -14,6 +14,7 @@
         </div>
         <div id="content">
             <h2>Loading...</h2>
+
         </div>
 
     </div>
@@ -25,26 +26,84 @@
         const STATE = {};
 
         function setContributor(event) {
-            const contributor = event.target.value;
+            STATE.contributor = event.target.value;
+            renderContent();
         }
 
         function renderControls() {
             let html = '';
 
             html += `
-                    <select onChange="setContributor" >
+                    <select onChange="setContributor(event)" >
+                        <option>Select your name...</option>
                         ${STATE.contributors.map(c => `<option value="${c}">${c}</option>`)}
                     </select>
-
-                `
-
+                    `;
 
             $('#controls').html(html);
         }
 
-        function setup() {
-            STATE.contributors = [... new Set(DATA.rankings.map(x => x.reviewer))];
+        function getPatchData() {
+            // Prepare a list of patches for the currently-selected contributor, 
+            // ranked according to their best match.
+
+            // 1. get list
+            const patches = DATA.rankings.filter(x => x.reviewer === STATE.contributor).sort((a, b)=>b.sum - a.sum).map(x => ({ ...x}));
+
+            // 2. decorate with message threads; this is a fresh clone
+            for ( const patch of patches ) {
+                patch.commitfest = {...STATE.patchById[patch.patch]};
+                patch.threadList = STATE.threadsOfPatch[patch.patch];
+            }
+
+
+            return patches;
+        }
+
+        function renderContent() {
+            let html = '';
+
+            if ( !STATE.contributor) {
+                html = '<h2>Please select your name to see your personalized patch review recommendations</h2>';
+                $("#content").html(html);
+                return;
+            }
+
+            // Patch list
+            const patchData = getPatchData();
+
+            // for testing
+            console.log(patchData);
+            console.log(patchData[0]);
+
+            $("#content").html(html);
+        }
+
+        function render() {
             renderControls();
+            renderContent();
+        }
+
+        function constructLookups() {
+            // Various indexes to make certain things more efficient.
+            const patchById = {};
+            for ( const patch of DATA.patches) {
+                patchById[patch.patch_id] = patch;
+            } 
+
+
+            const threadsOfPatch = {};
+            for ( const { patch, message } of DATA.patchMessage ) {
+                if (!threadsOfPatch[patch]) {
+                    threadsOfPatch[patch] = [];
+                }
+                threadsOfPatch[patch].push(message);
+            }
+
+            return {
+                patchById,
+                threadsOfPatch
+            }
         }
 
         (async () => {
@@ -61,7 +120,7 @@
                 'contrib_tf_idf.json',
                 'patches.json',
                 'thread_stats.json',
-                'thread_summaries.json',
+                'patch_message.json',
 
             ].map(url => fetch(dataBaseURL + url).then(x => x.json())))
 
@@ -73,8 +132,15 @@
                 patchMessage
             });
 
+            Object.assign(STATE, constructLookups());
+
+            STATE.contributors = [... new Set(DATA.rankings.map(x => x.reviewer))];
+
+
             // 2. Set up UX
-            setup()
+            render();
+
+            setContributor({ target: { value: 'Robert Haas' }}); // for testing only
 
         })();
     </script>
