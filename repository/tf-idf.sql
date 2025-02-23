@@ -31,7 +31,6 @@ drop materialized view if exists per_file_tf_idf cascade;
 
 create materialized view perfile_tf_idf as
     select 
-        a.message_id message_id, 
         p.patch patch,
         tf.file file, 
         tf.author reviewer, 
@@ -41,9 +40,9 @@ create materialized view perfile_tf_idf as
         ln(1 + a.additions + a.deletion) * tf.tf * idf.idf tf_idf
     from 
         contrib_tf tf
-        left join contrib_idf idf on tf.file = idf.file
-        left join attachment_stats a on a.file = tf.file
-        left join patch_message p on p.message = a.message_id
+        join contrib_idf idf on tf.file = idf.file
+        join attachment_stats a on a.file = tf.file
+        join patch_message p on p.message = a.message_id
 ;
 
 drop materialized view if exists contrib_tf_idf cascade;
