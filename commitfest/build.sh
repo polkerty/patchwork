@@ -12,11 +12,11 @@ psql -p 6565 -c "\
   FROM (SELECT * FROM thread_summaries) t;" \
   -t -A > ../frontend/data/thread_summaries.json
 
-# contrib_idf: Relevance rank of patches per contributor
+# contrib_tf_idf: Relevance rank of patches per contributor
 psql -p 6565 -c "\
   SELECT json_agg(row_to_json(t)) \
-  FROM (SELECT * FROM contrib_idf) t;" \
-  -t -A > ../frontend/data/contrib_idf.json
+  FROM (SELECT * FROM contrib_tf_idf) t;" \
+  -t -A > ../frontend/data/contrib_tf_idf.json
 
 # patches: Commitfest data about patches
 psql -p 6565 -c "\

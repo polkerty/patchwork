@@ -1,51 +1,83 @@
 <html>
-    <head>
-        <title>Experimental commitfest patch ranker</title>
-    </head>
 
-    <body>
-        
-        <div id="main">
-            <div id="controls" >
+<head>
+    <title>Experimental commitfest patch ranker</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.js"
+        integrity="sha256-UgvvN8vBkgO0luPSUl2s8TIlOSYRoGFAX4jlCIm9Adc=" crossorigin="anonymous"></script>
+</head>
 
-            </div>
-            <div id="content" >
-                <h2>Loading...</h2>
-            </div>
+<body>
+
+    <div id="main">
+        <div id="controls">
 
         </div>
+        <div id="content">
+            <h2>Loading...</h2>
+        </div>
+
+    </div>
 
 
-        <script>
+    <script defer>
 
-            (async ()=>{
-                // 1. Fetch principal data sources
-                const dataBaseURL = 'data/';
-                const [
-                    threadSummaries,
-                    contribIDF,
-                    patches,
-                    threadStats,
-                    patchMessage
-                ] = await Promise.all([
-                    'thread_summaries.json',
-                    'contrib_idf.json',
-                    'patches.json',
-                    'thread_stats.json',
-                    'thread_summaries.json',
+        const DATA = {};
+        const STATE = {};
 
-                ].map(url => fetch(dataBaseURL + url)))
+        function setContributor(event) {
+            const contributor = event.target.value;
+        }
 
-                // AI-generated thread analysis (thread_summaries)
-                // Contributor-tailored ranking of relevant patches (contrib_idf)
-                // The name of each patch (patches) which we could augment with more commitfest patch data if desired
-                // Useful stats from message threads like last date, reviewers, etc (thread_stats) 
-                
+        function renderControls() {
+            let html = '';
 
-                // 2. Set up UX
+            html += `
+                    <select onChange="setContributor" >
+                        ${STATE.contributors.map(c => `<option value="${c}">${c}</option>`)}
+                    </select>
 
-            })();
-        </script>
-    </body>
+                `
+
+
+            $('#controls').html(html);
+        }
+
+        function setup() {
+            STATE.contributors = [... new Set(DATA.rankings.map(x => x.reviewer))];
+            renderControls();
+        }
+
+        (async () => {
+            // 1. Fetch principal data sources
+            const dataBaseURL = 'data/';
+            const [
+                threadSummaries,
+                rankings,
+                patches,
+                threadStats,
+                patchMessage
+            ] = await Promise.all([
+                'thread_summaries.json',
+                'contrib_tf_idf.json',
+                'patches.json',
+                'thread_stats.json',
+                'thread_summaries.json',
+
+            ].map(url => fetch(dataBaseURL + url).then(x => x.json())))
+
+            Object.assign(DATA, {
+                threadSummaries,
+                rankings,
+                patches,
+                threadStats,
+                patchMessage
+            });
+
+            // 2. Set up UX
+            setup()
+
+        })();
+    </script>
+</body>
 
 </html>
