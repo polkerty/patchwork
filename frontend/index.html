@@ -25,7 +25,7 @@
             <div id="table_inner">
 
             </div>
-    
+
         </div>
 
     </div>
@@ -87,7 +87,7 @@
                 patch.patch_id_3 = patch.patch_id;
             }
 
-            patches = patches.sort((a, b) => a.rank < b.rank? -1: 1);
+            patches = patches.sort((a, b) => a.rank < b.rank ? -1 : 1);
 
             return patches;
         }
@@ -123,7 +123,7 @@
                         select: 1,
                         render: renderNameLink,
                         searchMethod: (terms, cell, row, _column, source) => {
-                            if ( !terms.length) return true;
+                            if (!terms.length) return true;
                             // this is painful but we have to work backwards again to get the name
                             const entry = STATE.patchById[cell.data[0].data]; // forgive me, it's a demo
                             const lower_case = entry.name.toLowerCase();
@@ -214,6 +214,22 @@
                 childNodes: threads.flatMap(thread =>
                 ([
                     {
+                        nodeName: "A",
+                        attributes: {
+                            "href": `https://postgr.es/m/${thread.id}/`,
+                            "target": "_blank"
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: "Link to thread"
+                            }
+                        ]
+                    },
+                    {
+                        nodeName: "BR"
+                    },
+                    {
                         nodeName: "STRONG",
                         childNodes: [
                             {
@@ -229,12 +245,12 @@
                         childNodes: [
                             {
                                 nodeName: "#text",
-                                data: "[LLM] Summary: " + thread.summary
+                                data: thread.summary
                             }
 
                         ]
 
-                    }, 
+                    },
                     {
                         nodeName: "BR"
                     },
