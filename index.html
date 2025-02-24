@@ -78,9 +78,9 @@
             let html = '';
 
             html += `
-                    <select onChange="setContributor(event)" >
-                        <option value="" >Select your name...</option>
-                        ${STATE.contributors.map(c => `<option value="${c}">${c}</option>`)}
+                    <select onChange="setContributor(event)"  >
+                        <option value="" ${(STATE.contributor??"") === "" ? 'selected':''} >Select your name...</option>
+                        ${STATE.contributors.map(c => `<option value="${c}" ${(STATE.contributor??"") === c ? 'selected':''} >${c}</option>`)}
                     </select>
                     `;
 
@@ -571,7 +571,8 @@
             // 2. Set up UX
             render();
 
-            setContributor({ target: { value: 'Robert Haas' } }); // for testing only
+            STATE.contributor = '';
+            // setContributor({ target: { value: 'Robert Haas' } }); // for testing only
 
         })();
 
