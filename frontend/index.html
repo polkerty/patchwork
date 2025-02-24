@@ -94,11 +94,17 @@
             // for testing
             console.log(patchData);
             console.log(patchData[0]);
+
+            STATE.table = patchData; 
             
             let dataTable = new window.simpleDatatables.DataTable('#table', {
                 searchable: true,
                 fixedHeight: true,
                 columns: [
+                    {
+                        select: 1,
+                        render: renderNameLink,
+                    },
                     {
                         // relevancy ...
                         select: 2,
@@ -113,7 +119,7 @@
                         }, 
                         {
                             text: "Name",
-                            data: "name"
+                            data: 'name',
                         }, 
                         {
                             text: "Relevancy rank",
@@ -133,11 +139,22 @@
             $("#content").html(html);
         }
 
-        const renderRanking = function(data, _cell, _dataIndex, _cellIndex) {
-                console.log(data);
-                if ( !data.ranking) return "Not relevant";
-                return data.ranking.sum;
-            }
+        const renderNameLink = function(data, cell, dataIndex, cellIndex) {
+            const entry = STATE.table[dataIndex];
+            cell.childNodes = [{
+                nodeName: "A",
+                attributes: {
+                    "href": `https://commitfest.postgresql.org/patch/${entry.patch_id}/`,
+                    "target": "_blank"
+                },
+                childNodes: [
+                    {
+                        nodeName: "#text",
+                        data: entry.name
+                    }
+                ]
+            }]
+        }
 
         function render() {
             renderControls();
