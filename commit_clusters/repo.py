@@ -1,3 +1,4 @@
+import re
 from git import Repo
 
 def get_last_n_commits(repo_path, n=5, branch='master'):
@@ -27,7 +28,21 @@ def get_last_n_commits(repo_path, n=5, branch='master'):
     
     return commit_list
 
-# Example usage:
-# my_commits = get_last_n_commits('/path/to/my/repo', n=3, branch='main')
-# for c in my_commits:
-#     print(c)
+def get_threads_of_last_n_commits(repo_path, n=5, branch='master'):
+    commits = get_last_n_commits(repo_path, n, branch)
+
+    results = []
+
+    for commit in commits:
+        regex = re.compile("https://postgr.es/m/(.*)\w")
+        threads = regex.findall(commit['commit_text'])
+
+        if len(threads):
+                for thread in threads:
+                    results.append({
+                        "sha": commit['sha'], 
+                        "date": commit['date'], 
+                        "thread": thread
+                    })
+
+    return results

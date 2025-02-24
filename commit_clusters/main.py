@@ -1,17 +1,12 @@
-from repo import get_last_n_commits
-import re
+from repo import get_threads_of_last_n_commits
+
 def main():
-    commits = get_last_n_commits('~/postgres/postgres', 10000)
+    commits = get_threads_of_last_n_commits('~/postgres/postgres', 10000)
 
     for commit in commits:
-        regex = re.compile("https://postgr.es/m/(.*)\w")
-        threads = regex.findall(commit['commit_text'])
+        print(commit)
 
-        if len(threads):
-                for i,  thread in enumerate(threads):
-                    print (commit['sha'], commit['date'], thread, i)
-        else:
-             print(commit['sha'], commit['date'], None)
+    print(len(commits))
 
 
 if __name__ == "__main__":
