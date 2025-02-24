@@ -73,6 +73,12 @@
                 patch.rank = rankings[patch.patch_id]?.rank ?? patches.length; 
                 patch.commitfest = { ...STATE.patchById[patch.patch_id] };
                 patch.threads = STATE.threadsOfPatch[patch.patch_id].map(thread => STATE.byThread[thread]);
+
+
+                // dummy IDs to work around table not allowing multiple references to the same column
+                // never mind, this is a nightmare, i'll have to redo it in react. wtf.
+                patch.patch_id_2 = patch.patch_id;
+                patch.patch_id_3 = patch.patch_id;
             }
 
 
@@ -102,13 +108,26 @@
                 fixedHeight: true,
                 columns: [
                     {
+                        select: 0,
+                    },
+                    {
                         select: 1,
                         render: renderNameLink,
+                        searchMethod: (terms, cell, row, _column, source) => {
+                            // this is painful but we have to work backwards again to get the name
+                            const entry = STATE.patchById[cell.data[0].data]; // forgive me, it's a demo
+                            const lower_case = entry.name.toLowerCase();
+                            return terms.filter(term => lower_case.includes(term.toLowerCase())).length === terms.length;
+                        }
                     },
                     {
                         // relevancy ...
                         select: 2,
                         sort: "asc"
+                    },
+                    {
+                        select: 3,
+                        render: renderThreads,
                     }
                 ],
                 data: {
@@ -119,16 +138,16 @@
                         }, 
                         {
                             text: "Name",
-                            data: 'name',
+                            data: 'patch_id_2',
                         }, 
                         {
                             text: "Relevancy rank",
                             data: "rank",
                         }, 
-                        // {
-                        //     text: "Threads",
-                        //     data: "threads"
-                        // }, 
+                        {
+                            text: "Threads",
+                            data: "patch_id_3"
+                        }, 
                     ],
                     data: patchData
                 }
@@ -140,19 +159,59 @@
         }
 
         const renderNameLink = function(data, cell, dataIndex, cellIndex) {
-            const entry = STATE.table[dataIndex];
+            const entry = STATE.patchById[data[0].data]; // forgive me, it's a demo
+            cell.childNodes = [
+                
+                {
+                    nodeName: "SPAN",
+                    attributes: {
+                        "style": `display: none;`,
+                    },
+                    childNodes: [
+                        {
+                            nodeName: "#text",
+                            data: entry.name // fix sort
+                        }
+                    ],
+
+                },
+                {
+                    nodeName: "A",
+                    attributes: {
+                        "href": `https://commitfest.postgresql.org/patch/${entry.patch_id}/`,
+                        "target": "_blank"
+                    },
+                    childNodes: [
+                        {
+                            nodeName: "#text",
+                            data: entry.name
+                        }
+                    ]
+                }
+            ]
+        }
+
+        const renderThreads = function(data, cell, dataIndex, cellIndex) {
+            const entry = STATE.patchById[data[0].data]; // forgive me, it's a demo
+            const threads = STATE.threadsOfPatch[entry.id].map(thread => STATE.byThread[thread]);
             cell.childNodes = [{
-                nodeName: "A",
+                nodeName: "UL",
                 attributes: {
                     "href": `https://commitfest.postgresql.org/patch/${entry.patch_id}/`,
                     "target": "_blank"
                 },
-                childNodes: [
-                    {
-                        nodeName: "#text",
-                        data: entry.name
-                    }
-                ]
+                childNodes: threads.map(thread => 
+                    ({
+                        nodeName: "LI",
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: thread.summary
+                            }
+
+                        ]
+
+                }))
             }]
         }
 
