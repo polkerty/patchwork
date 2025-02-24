@@ -51,8 +51,8 @@ create materialized view contrib_tf_idf as
     SELECT 
         reviewer, 
         patch, 
-        SUM(tf_idf) AS total_tf_idf,
-        RANK() OVER (PARTITION BY reviewer ORDER BY SUM(tf_idf) DESC) AS rank
+        AVG(tf_idf) AS total_tf_idf,
+        RANK() OVER (PARTITION BY reviewer ORDER BY AVG(tf_idf) DESC) AS rank
     FROM 
         perfile_tf_idf f
     GROUP BY 
