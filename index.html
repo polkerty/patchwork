@@ -7,13 +7,13 @@
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
     <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet"> -->
     <style>
         body, table {
-            font-family: "Atkinson Hyperlegible Mono", serif;
-            font-size: smaller;
+            /* font-family: "Atkinson Hyperlegible Mono", serif;
+            font-size: smaller; */
         }
     </style>
     <script>
@@ -38,7 +38,8 @@
             files changed to the ones you've changed historically to create a custom ranking of relevant patches
             for anyone who's committed to Postgres in the past, or been credited with an <code>Author:</code> line in the commit message. 
             <a href="https://github.com/polkerty/patchwork" target="_blank" >Repository</a> | <a href="mailto:jacob.brazeal@gmail.com" >Contact</a> |
-            <span id="last-updated"></span>
+            <span id="last-updated"></span> Name matching between mailing lists, git repo, and commitfest is approximate and can break (especially
+            when people have multiple handles.)
         </p>
         <div id="controls">
             <h2>Loading...</h2>
@@ -147,10 +148,9 @@
                     patches = patches.filter(patch => patch.newReviewer === 'Yes');
                     break;
                 case FILTER_ENUM.MY_REVIEWS:
-
-                    break;
+                    patches = patches.filter(x => x.threads.find(t => t.stats.reviewer_list.find(r => r.toLowerCase() === STATE.contributor.toLowerCase())))
                 case FILTER_ENUM.MY_PATCHES:
-
+                    patchrs = patches.filter(x => x.threads.find(t => t.stats.author.toLowerCase() === STATE.contributor.toLowerCase()))
                     break;
 
                 default:
@@ -318,6 +318,58 @@
                             {
                                 nodeName: "#text",
                                 data: thread.status
+                            }
+                        ]
+                    },
+                    {
+                        nodeName: "BR"
+                    },
+                    {
+                        nodeName: "STRONG",
+                        attributes: {
+                            style: "margin-right: 10px;"
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: "Author: "
+                            }
+                        ]
+                    },
+                    {
+                        nodeName: "SPAN",
+                        attributes: {
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: thread.stats.author
+                            }
+                        ]
+                    },
+                    {
+                        nodeName: "BR"
+                    },
+                    {
+                        nodeName: "STRONG",
+                        attributes: {
+                            style: "margin-right: 10px;"
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: "Also in thread: "
+                            }
+                        ]
+                    },
+                    {
+                        nodeName: "SPAN",
+                        attributes: {
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: thread.stats.reviewer_list.join(', ')
                             }
                         ]
                     },
