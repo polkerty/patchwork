@@ -62,7 +62,7 @@
         const FILTER_ENUM = {
             "ALL": "All patches",
             "NEW": "Patches the LLM thinks need a review",
-            "MY_REVIEWS": "Patches I'm reviewing",
+            "MY_REVIEWS": "My mailing threads",
             "MY_PATCHES": "Patches I wrote"
         }
 
@@ -88,13 +88,18 @@
                 if ( STATE.filter === name ) {
                     html += "<strong>" + name + '</strong>';
                 } else {
-                    html += `<a href='javascript:void(0)' onClick="setFilter('${name}')" >${name}</a>`
+                    html += `<a href='javascript:void(0)' onClick='setFilter("${name}")' >${name}</a>`
                 }
                 html += `<span style="margin: 0 5px;" >|</span>`;
             }
 
 
             $('#controls').html(html);
+        }
+
+        function setFilter(filter) {
+            STATE.filter = filter;
+            render();
         }
 
         function getPatchData() {
@@ -131,6 +136,25 @@
             }
 
             patches = patches.sort((a, b) => a.rank < b.rank ? -1 : 1);
+
+            // 3. filter according to filter rules 
+            switch ( STATE.filter ) {
+                case FILTER_ENUM.ALL:
+                    // nothing to filter
+                    break;
+                case FILTER_ENUM.NEW:
+                    patches = patches.filter(patch => patch.newReviewer === 'Yes');
+                    break;
+                case FILTER_ENUM.MY_REVIEWS:
+
+                    break;
+                case FILTER_ENUM.MY_PATCHES:
+
+                    break;
+
+                default:
+                    break;
+            }
 
             return patches;
         }
