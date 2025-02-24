@@ -10,28 +10,28 @@ psql -p 6565 -f ../repository/tf-idf.sql      # analyze postgres repo for usage 
 psql -p 6565 -c "\
   SELECT json_agg(row_to_json(t)) \
   FROM (SELECT * FROM thread_summaries) t;" \
-  -t -A > ../frontend/data/thread_summaries.json
+  -t -A > ../data/thread_summaries.json
 
 # contrib_tf_idf: Relevance rank of patches per contributor
 psql -p 6565 -c "\
   SELECT json_agg(row_to_json(t)) \
   FROM (SELECT * FROM contrib_tf_idf) t;" \
-  -t -A > ../frontend/data/contrib_tf_idf.json
+  -t -A > ../data/contrib_tf_idf.json
 
 # patches: Commitfest data about patches
 psql -p 6565 -c "\
   SELECT json_agg(row_to_json(t)) \
   FROM (SELECT * FROM patches) t;" \
-  -t -A > ../frontend/data/patches.json
+  -t -A > ../data/patches.json
 
 # thread_stats: more info about threads
 psql -p 6565 -c "\
   SELECT json_agg(row_to_json(t)) \
   FROM (SELECT * FROM thread_stats) t;" \
-  -t -A > ../frontend/data/thread_stats.json
+  -t -A > ../data/thread_stats.json
 
 # patch_message: link a patch to its mailing threads, and vice versa
 psql -p 6565 -c "\
   SELECT json_agg(row_to_json(t)) \
   FROM (SELECT * FROM patch_message) t;" \
-  -t -A > ../frontend/data/patch_message.json
+  -t -A > ../data/patch_message.json
