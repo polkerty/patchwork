@@ -28,13 +28,75 @@ def get_last_n_commits(repo_path, n=5, branch='master'):
     
     return commit_list
 
+def repair_message_id(id: str, sha: str):
+     # message IDs pasted into commit threads are often broken. 
+     # one super-common case is to miss the last letter, which we can repair as follows:
+
+     # the .coms
+    repaired = id
+
+    com_co_corruptions = [
+         'gmail.co', 
+         'google.co',
+         'outlook.co', 
+         'vmware.co',
+         'qq.co',
+         'leadboat.co',
+         'depesz.co',
+         'j-davis.co',
+         'amazon.co',
+         'dalibo.co',
+         'exchangelabs.com',
+
+
+    ]
+    for site in com_co_corruptions:
+          if id.endswith(site):
+               repaired += 'm'
+               break
+          
+    # other corrections
+    for suffix in [
+         '.compute.internal',
+         '.org',
+         '.ru',
+         'paquier.xyz',
+         'aivenlaptop',
+         'alvherre.pgsql',
+         'nttdata.com',
+         '.co.jp',
+         'Spark',
+         '.pa.us',
+         '.net',
+         '.de',
+         'momjian.us',
+         'vondra.me',
+         'OUTLOOK.COM',
+         'nathan',
+         'neon.tech',
+         'proxel.se',
+         'woodcraft.me.uk',
+
+
+
+    ]:
+         if id.endswith(suffix[:-1]):
+              repaired += suffix[-1]
+              break
+
+    if id != repaired:
+         print(sha, f"Fixed ID: {id} -> {repaired}")
+
+    return repaired
+    
+
 def get_threads_of_last_n_commits(repo_path, n=5, branch='master'):
     commits = get_last_n_commits(repo_path, n, branch)
 
     results = []
 
     for commit in commits:
-        regex = re.compile("https://postgr.es/m/(.*)\w")
+        regex = re.compile(r"https://postgr\.es/m(?:/flat)?/([^/\s]+)")
         threads = regex.findall(commit['commit_text'])
 
         if len(threads):

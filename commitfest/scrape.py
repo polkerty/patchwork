@@ -13,8 +13,8 @@ def parse_thread(id):
     response = requests.get(url)
     
     if response.status_code != 200:
-        print(f"Failed to fetch the page: {response.status_code}")
-        return None
+        err = f"Failed to fetch the page for {id}: {response.status_code}"
+        raise ValueError(err)
 
     soup = BeautifulSoup(response.text, "html.parser")
     
