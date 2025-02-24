@@ -69,7 +69,8 @@
 
             // 2. decorate
             for (const patch of patches) {
-                patch.ranking = rankings[patch.patch_id];
+                patch.rankData = rankings[patch.patch_id];
+                patch.rank = rankings[patch.patch_id]?.rank ?? patches.length; 
                 patch.commitfest = { ...STATE.patchById[patch.patch_id] };
                 patch.threads = STATE.threadsOfPatch[patch.patch_id].map(thread => STATE.byThread[thread]);
             }
@@ -97,18 +98,13 @@
             let dataTable = new window.simpleDatatables.DataTable('#table', {
                 searchable: true,
                 fixedHeight: true,
-                // columns: [
-                //     // {
-                //     //     // select the fourth column ...
-                //     //     select: 3,
-                //     //     // ... let the instance know we have datetimes in it ...
-                //     //     type: "date",
-                //     //     // ... pass the correct datetime format ...
-                //     //     format: "YYYY/DD/MM",
-                //     //     // ... sort it ...
-                //     //     sort: "desc"
-                //     // }
-                // ],
+                columns: [
+                    {
+                        // relevancy ...
+                        select: 2,
+                        sort: "asc"
+                    }
+                ],
                 data: {
                     headings: [
                         {
@@ -119,6 +115,14 @@
                             text: "Name",
                             data: "name"
                         }, 
+                        {
+                            text: "Relevancy rank",
+                            data: "rank",
+                        }, 
+                        // {
+                        //     text: "Threads",
+                        //     data: "threads"
+                        // }, 
                     ],
                     data: patchData
                 }
@@ -128,6 +132,12 @@
 
             $("#content").html(html);
         }
+
+        const renderRanking = function(data, _cell, _dataIndex, _cellIndex) {
+                console.log(data);
+                if ( !data.ranking) return "Not relevant";
+                return data.ranking.sum;
+            }
 
         function render() {
             renderControls();

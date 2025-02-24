@@ -48,11 +48,17 @@ create materialized view perfile_tf_idf as
 drop materialized view if exists contrib_tf_idf cascade;
 
 create materialized view contrib_tf_idf as 
-    select reviewer, patch, sum(tf_idf)
-    from
+    SELECT 
+        reviewer, 
+        patch, 
+        SUM(tf_idf) AS total_tf_idf,
+        RANK() OVER (PARTITION BY reviewer ORDER BY SUM(tf_idf) DESC) AS rank
+    FROM 
         perfile_tf_idf f
-    group by 1, 2
-    order by 1 asc, 2 desc;
+    GROUP BY 
+        reviewer, patch
+    ORDER BY 
+        reviewer ASC, rank ASC;
 ;
 
 commit;
