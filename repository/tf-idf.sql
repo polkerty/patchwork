@@ -35,7 +35,7 @@ create materialized view perfile_tf_idf as
         tf.file file, 
         tf.author reviewer, 
         a.additions,
-        a.deletion,
+        a.deletion deletions,
         tf.tf * idf.idf unweighted_tf_idf,
         ln(1 + a.additions + a.deletion) * tf.tf * idf.idf tf_idf
     from 
@@ -52,7 +52,9 @@ create materialized view contrib_tf_idf as
         reviewer, 
         patch, 
         AVG(tf_idf) AS total_tf_idf,
-        RANK() OVER (PARTITION BY reviewer ORDER BY AVG(tf_idf) DESC) AS rank
+        RANK() OVER (PARTITION BY reviewer ORDER BY AVG(tf_idf) DESC) AS rank,
+        sum(additions) as additions,
+        sum(deletions) as delections
     FROM 
         perfile_tf_idf f
     GROUP BY 

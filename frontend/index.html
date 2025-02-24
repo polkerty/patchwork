@@ -231,6 +231,95 @@
                     },
                     {
                         nodeName: "STRONG",
+                        attributes: {
+                            style: "margin-right: 10px;"
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: "[LLM] Thread status"  
+                            }
+                        ]
+                    },                    
+                    {
+                        nodeName: "SPAN",
+                        attributes: {
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: thread.status
+                            }
+                        ]
+                    },
+                    {
+                        nodeName: "BR"
+                    },
+                    {
+                        nodeName: "STRONG",
+                        attributes: {
+                            style: "margin-right: 10px;"
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: "[LLM] Activity"  
+                            }
+                        ]
+                    },                    
+                    {
+                        nodeName: "SPAN",
+                        attributes: {
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: thread.activity
+                            }
+                        ]
+                    },                    
+                    {
+                        nodeName: "BR"
+                    },
+                    {
+                        nodeName: "STRONG",
+                        attributes: {
+                            style: "margin-right: 10px;"
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: "Last message:"  
+                            }
+                        ]
+                    },                    
+                    {
+                        nodeName: "SPAN",
+                        attributes: {
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: thread.stats.last_activity
+                            }
+                        ]
+                    },                    // {
+                    //     nodeName: "SPAN",
+                    //     attributes: {
+                    //         "style": "color: green; margin: 0px 5px;"
+                    //     },
+                    //     childNodes: [
+                    //         {
+                    //             nodeName: "#text",
+                    //             data: "+" 
+                    //         }
+                    //     ]
+                    // },
+                    {
+                        nodeName: "BR"
+                    },
+                    {
+                        nodeName: "STRONG",
                         childNodes: [
                             {
                                 nodeName: "#text",
@@ -291,7 +380,6 @@
             for (const patch of DATA.patches) {
                 patchById[patch.patch_id] = patch;
             }
-
 
             const threadsOfPatch = {};
             for (const { patch, message } of DATA.patchMessage) {
