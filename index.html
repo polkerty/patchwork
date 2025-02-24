@@ -6,6 +6,19 @@
         integrity="sha256-UgvvN8vBkgO0luPSUl2s8TIlOSYRoGFAX4jlCIm9Adc=" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+    <script>
+        window.va = function () {
+            (window.vaq = window.vaq || []).push(arguments);
+        };
+        window.va('beforeSend', (event) => {
+            if (event.url.includes('/private')) {
+                return null;
+            }
+            return event;
+        });
+    </script>
+
 </head>
 
 <body>
@@ -237,10 +250,10 @@
                         childNodes: [
                             {
                                 nodeName: "#text",
-                                data: "[LLM] Thread status"  
+                                data: "[LLM] Thread status"
                             }
                         ]
-                    },                    
+                    },
                     {
                         nodeName: "SPAN",
                         attributes: {
@@ -263,10 +276,10 @@
                         childNodes: [
                             {
                                 nodeName: "#text",
-                                data: "[LLM] Activity"  
+                                data: "[LLM] Activity"
                             }
                         ]
-                    },                    
+                    },
                     {
                         nodeName: "SPAN",
                         attributes: {
@@ -277,7 +290,7 @@
                                 data: thread.activity
                             }
                         ]
-                    },                    
+                    },
                     {
                         nodeName: "BR"
                     },
@@ -289,10 +302,10 @@
                         childNodes: [
                             {
                                 nodeName: "#text",
-                                data: "Last message:"  
+                                data: "Last message:"
                             }
                         ]
-                    },                    
+                    },
                     {
                         nodeName: "SPAN",
                         attributes: {
@@ -446,6 +459,7 @@
             setContributor({ target: { value: 'Robert Haas' } }); // for testing only
 
         })();
+
     </script>
 </body>
 
