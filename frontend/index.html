@@ -12,9 +12,9 @@
 
     <div id="main">
         <h1>03/2025 Commitfest patch ranker (experimental)</h1>
-        <p>How it works: LLM reads through mailing list threads to figure out the status, and we cross-reference the 
+        <p>How it works: LLM reads through mailing list threads to figure out the status, and we cross-reference the
             files changed to the ones you've changed historically to create a custom ranking of relevant patches
-            for anyone who's committed to Postgres in the past, or been credited as a <code>Author:</code>. 
+            for anyone who's committed to Postgres in the past, or been credited as a <code>Author:</code>.
         </p>
         <div id="controls">
             <h2>Loading...</h2>
@@ -56,28 +56,28 @@
             // ranked according to their best match.
 
             // 1. get all patches
-            const patches = DATA.patches.map(x => ({...x}));
+            const patches = DATA.patches.map(x => ({ ...x }));
 
-            const rankings = 
+            const rankings =
                 Object.fromEntries(
                     DATA.rankings.
                         filter(x => x.reviewer === STATE.contributor).
                         sort((a, b) => b.sum - a.sum).
                         map(x => ({ ...x })).
                         map(x => [x.patch, x])
-        );
+                );
 
             // 2. decorate
             for (const patch of patches) {
                 patch.rankData = rankings[patch.patch_id];
-                patch.rank = rankings[patch.patch_id]?.rank ?? patches.length; 
+                patch.rank = rankings[patch.patch_id]?.rank ?? patches.length;
                 patch.commitfest = { ...STATE.patchById[patch.patch_id] };
                 patch.threads = STATE.threadsOfPatch[patch.patch_id].map(thread => STATE.byThread[thread]);
 
                 // hoisting some thread data up for each of use in the table
                 patch.newReviewer = patch.threads.map(t => t.would_benefit_from_new_reviewer).filter(v => v === 'YES').length > 0
-                    ?   'Yes'
-                    :   'No';
+                    ? 'Yes'
+                    : 'No';
 
                 // dummy IDs to work around table not allowing multiple references to the same column
                 // never mind, this is a nightmare, i'll have to redo it in react. wtf.
@@ -105,8 +105,8 @@
             console.log(patchData);
             console.log(patchData[0]);
 
-            STATE.table = patchData; 
-            
+            STATE.table = patchData;
+
             let dataTable = new window.simpleDatatables.DataTable('#table', {
                 searchable: true,
                 fixedHeight: true,
@@ -140,23 +140,23 @@
                         {
                             text: "ID",
                             data: "patch_id"
-                        }, 
+                        },
                         {
                             text: "Name",
                             data: 'patch_id_2',
-                        }, 
+                        },
                         {
                             text: "Relevancy rank",
                             data: "rank",
-                        }, 
+                        },
                         {
                             text: "Threads",
                             data: "patch_id_3"
-                        }, 
+                        },
                         {
                             text: "[LLM] Would benefit from a net-new reviewer?",
                             data: "newReviewer"
-                        }, 
+                        },
                     ],
                     data: patchData
                 }
@@ -167,10 +167,10 @@
             $("#content").html(html);
         }
 
-        const renderNameLink = function(data, cell, dataIndex, cellIndex) {
+        const renderNameLink = function (data, cell, dataIndex, cellIndex) {
             const entry = STATE.patchById[data[0].data]; // forgive me, it's a demo
             cell.childNodes = [
-                
+
                 {
                     nodeName: "SPAN",
                     attributes: {
@@ -200,27 +200,61 @@
             ]
         }
 
-        const renderThreads = function(data, cell, dataIndex, cellIndex) {
+        const renderThreads = function (data, cell, dataIndex, cellIndex) {
             const entry = STATE.patchById[data[0].data]; // forgive me, it's a demo
             const threads = STATE.threadsOfPatch[entry.id].map(thread => STATE.byThread[thread]);
             cell.childNodes = [{
-                nodeName: "UL",
-                attributes: {
-                    "href": `https://commitfest.postgresql.org/patch/${entry.patch_id}/`,
-                    "target": "_blank"
-                },
-                childNodes: threads.map(thread => 
-                    ({
-                        nodeName: "LI",
+                nodeName: "DIV",
+                childNodes: threads.flatMap(thread =>
+                ([
+                    {
+                        nodeName: "STRONG",
                         childNodes: [
                             {
                                 nodeName: "#text",
-                                data: thread.summary
+                                data: "[LLM] Summary: "
                             }
 
                         ]
 
-                }))
+                    },
+                    {
+                        nodeName: "SPAN",
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: "[LLM] Summary: " + thread.summary
+                            }
+
+                        ]
+
+                    }, 
+                    {
+                        nodeName: "BR"
+                    },
+                    {
+                        nodeName: "STRONG",
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: "Main Issue: "
+                            }
+
+                        ]
+
+                    },
+                    {
+                        nodeName: "SPAN",
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: thread.problem
+                            }
+
+                        ]
+
+                    }
+                ]))
             }]
         }
 
