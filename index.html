@@ -59,6 +59,13 @@
         const DATA = {};
         const STATE = {};
 
+        const FILTER_ENUM = {
+            "ALL": "All patches",
+            "NEW": "Patches the LLM thinks need a review",
+            "MY_REVIEWS": "Patches I'm reviewing",
+            "MY_PATCHES": "Patches I wrote"
+        }
+
         function setContributor(event) {
             STATE.contributor = event.target.value;
             renderContent();
@@ -73,6 +80,18 @@
                         ${STATE.contributors.map(c => `<option value="${c}">${c}</option>`)}
                     </select>
                     `;
+
+            html += "<strong style='margin: 0 10px;'>Filter:</strong>";
+
+            for ( const [filter, name] of Object.entries(FILTER_ENUM)) {
+                if ( STATE.filter === name ) {
+                    html += "<strong>" + name + '</strong>';
+                } else {
+                    html += `<a href='javascript:void(0)' onClick="setFilter('${name}')" >${name}</a>`
+                }
+                html += `<span style="margin: 0 5px;" >|</span>`;
+            }
+
 
             $('#controls').html(html);
         }
@@ -467,6 +486,7 @@
 
             STATE.contributors = [... new Set(DATA.rankings.map(x => x.reviewer))];
             STATE.lastUpdated = new Date(Math.max.apply(null,DATA.threadStats.map(thread => new Date(thread.last_activity))));
+            STATE.filter = FILTER_ENUM.ALL;
 
 
             // 2. Set up UX
