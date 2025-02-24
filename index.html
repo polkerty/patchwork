@@ -67,7 +67,8 @@
         }
 
         function setContributor(event) {
-            STATE.contributor = event.target.value;
+            const contributor = event.target.value?.length > 0 ? event.target.value : undefined;
+            STATE.contributor = contributor;
             renderContent();
         }
 
@@ -76,7 +77,7 @@
 
             html += `
                     <select onChange="setContributor(event)" >
-                        <option>Select your name...</option>
+                        <option value="" >Select your name...</option>
                         ${STATE.contributors.map(c => `<option value="${c}">${c}</option>`)}
                     </select>
                     `;
@@ -140,6 +141,7 @@
             if (!STATE.contributor) {
                 html = '<h2>Please select your name to see your personalized patch review recommendations</h2>';
                 $("#content").html(html);
+                $("#table").html("");
                 return;
             }
 
