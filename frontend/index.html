@@ -59,13 +59,12 @@
             // ranked according to their best match.
 
             // 1. get all patches
-            const patches = DATA.patches.map(x => ({ ...x }));
+            let patches = DATA.patches.map(x => ({ ...x }));
 
             const rankings =
                 Object.fromEntries(
                     DATA.rankings.
                         filter(x => x.reviewer === STATE.contributor).
-                        sort((a, b) => b.sum - a.sum).
                         map(x => ({ ...x })).
                         map(x => [x.patch, x])
                 );
@@ -88,6 +87,7 @@
                 patch.patch_id_3 = patch.patch_id;
             }
 
+            patches = patches.sort((a, b) => a.rank < b.rank? -1: 1);
 
             return patches;
         }
@@ -123,6 +123,7 @@
                         select: 1,
                         render: renderNameLink,
                         searchMethod: (terms, cell, row, _column, source) => {
+                            if ( !terms.length) return true;
                             // this is painful but we have to work backwards again to get the name
                             const entry = STATE.patchById[cell.data[0].data]; // forgive me, it's a demo
                             const lower_case = entry.name.toLowerCase();
@@ -131,11 +132,11 @@
                     },
                     {
                         // relevancy ...
-                        select: 2,
+                        select: 3,
                         sort: "asc"
                     },
                     {
-                        select: 3,
+                        select: 4,
                         render: renderThreads,
                     }
 
@@ -151,16 +152,16 @@
                             data: 'patch_id_2',
                         },
                         {
+                            text: "[LLM] Would benefit from a net-new reviewer?",
+                            data: "newReviewer"
+                        },
+                        {
                             text: "Relevancy rank",
                             data: "rank",
                         },
                         {
                             text: "Threads",
                             data: "patch_id_3"
-                        },
-                        {
-                            text: "[LLM] Would benefit from a net-new reviewer?",
-                            data: "newReviewer"
                         },
                     ],
                     data: patchData
