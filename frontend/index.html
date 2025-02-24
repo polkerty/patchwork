@@ -22,7 +22,10 @@
         <div id="content">
         </div>
         <div id="table">
+            <div id="table_inner">
 
+            </div>
+    
         </div>
 
     </div>
@@ -107,7 +110,9 @@
 
             STATE.table = patchData;
 
-            let dataTable = new window.simpleDatatables.DataTable('#table', {
+            $('#table').html("<div id='table_inner' ></div>"); // reset to appease table library
+
+            let dataTable = new window.simpleDatatables.DataTable('#table_inner', {
                 searchable: true,
                 fixedHeight: true,
                 columns: [
