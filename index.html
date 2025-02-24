@@ -28,7 +28,8 @@
         <p>How it works: LLM reads through mailing list threads to figure out the status, and we cross-reference the
             files changed to the ones you've changed historically to create a custom ranking of relevant patches
             for anyone who's committed to Postgres in the past, or been credited as a <code>Author:</code>. 
-            <a href="https://github.com/polkerty/patchwork" target="_blank" >Repository</a> | <a href="mailto:jacob.brazeal@gmail.com" >Contact</a>
+            <a href="https://github.com/polkerty/patchwork" target="_blank" >Repository</a> | <a href="mailto:jacob.brazeal@gmail.com" >Contact</a> |
+            <span id="last-updated"></span>
         </p>
         <div id="controls">
             <h2>Loading...</h2>
@@ -383,9 +384,14 @@
             }]
         }
 
+        function renderLastUpdated() {
+            $('#last-updated').html("<strong>Last updated</strong>: " + STATE.lastUpdated.toLocaleString() + "; any emails/commitfest entries after that time will not show up yet.");
+        }
+
         function render() {
             renderControls();
             renderContent();
+            renderLastUpdated()
         }
 
         function constructLookups() {
@@ -452,6 +458,7 @@
             Object.assign(STATE, constructLookups());
 
             STATE.contributors = [... new Set(DATA.rankings.map(x => x.reviewer))];
+            STATE.lastUpdated = new Date(Math.max.apply(null,DATA.threadStats.map(thread => new Date(thread.last_activity))));
 
 
             // 2. Set up UX
