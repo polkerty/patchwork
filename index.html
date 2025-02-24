@@ -148,7 +148,8 @@
                     patches = patches.filter(patch => patch.newReviewer === 'Yes');
                     break;
                 case FILTER_ENUM.MY_REVIEWS:
-                    patches = patches.filter(x => x.threads.find(t => t.stats.reviewer_list.find(r => r.toLowerCase() === STATE.contributor.toLowerCase())))
+                    patches = patches.filter(x => x.threads.find(t => t.stats.reviewer_list.find(r => r.toLowerCase() === STATE.contributor.toLowerCase())));
+                    break;
                 case FILTER_ENUM.MY_PATCHES:
                     patches = patches.filter(x => x.threads.find(t => t.stats.author.toLowerCase() === STATE.contributor.toLowerCase()))
                     break;
