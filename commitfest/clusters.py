@@ -12,7 +12,7 @@ def main():
     # 2. fetch threads
     message_ids = [t["thread"] for t in commit_and_thread]
     # this will fetch a cache that includes the text of the thread
-    threads = run_jobs(parse_thread, message_ids, max_workers=2) # hopefully won't get throttled at this low rate
+    threads = run_jobs(parse_thread, message_ids, max_workers=5) # hopefully won't get throttled at this low rate
 
 if __name__ == "__main__":
     main()
