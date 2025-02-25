@@ -154,3 +154,14 @@ def _helper_get_patch_name(soup):
     if title:
         return title.get_text(strip=True)
     return 'Title not found'
+
+
+# get email bodies from thread for clustering.
+def get_messages_from_thread(thread_text):
+    """
+    Takes an HTML snippet (no <html> or <body> tags) and returns a list
+    of the text content from all elements with the 'message-content' class.
+    """
+    soup = BeautifulSoup(thread_text, 'html.parser')
+    message_elements = soup.select('.message-content')
+    return [element.get_text(strip=True) for element in message_elements]
