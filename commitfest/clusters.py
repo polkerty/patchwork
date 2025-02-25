@@ -1,5 +1,7 @@
 from repo import get_threads_of_last_n_commits
 from analyze_thread import parse_thread
+from tf_idf import compute_tfidf_top_terms
+
 from cache import cache_results
 from worker import run_jobs
 
@@ -20,11 +22,18 @@ def get_valid_repo_threads(repo, commits):
 
     return valid_threads
 
+
+
+
 def main():
     threads = get_valid_repo_threads('~/postgres/postgres', 10000)
 
     print(f'Got {len(threads)} threads')
     pprint(list(threads.items())[0]) # sample
+
+    terms = compute_tfidf_top_terms(threads)
+    for term in terms:
+        print(term)
 
 
 if __name__ == "__main__":
