@@ -5,7 +5,7 @@ from worker import run_jobs
 
 from pprint import pprint
 
-cache_results()
+@cache_results()
 def get_valid_repo_threads(repo, commits):
     commit_and_thread = get_threads_of_last_n_commits(repo, commits)
 
