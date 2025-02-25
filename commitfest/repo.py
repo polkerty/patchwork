@@ -34,12 +34,13 @@ def get_threads_of_last_n_commits(repo_path, n=5, branch='master'):
     results = []
 
     for commit in commits:
-        regex = re.compile(r"https://postgr\.es/m(?:/flat)?/([^/\s]+)")
+        regex = re.compile(r"http(?:s)?://postgr\.es/m(?:/flat)?/([^/\s]+)")
         threads = regex.findall(commit['commit_text'])
 
         if len(threads):
                 for thread in threads:
                     results.append({
+                        "author": commit['author'],
                         "sha": commit['sha'], 
                         "date": commit['date'], 
                         "thread": thread
