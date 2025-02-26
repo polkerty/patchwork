@@ -35,10 +35,10 @@ def prompt_gemini(prompt, attempt=0):
         if attempt < 10 and 'error' in req and 'code' in req['error'] and req['error']['code'] == 429:
             # backoff
             print(f"Retrying try #{attempt + 1}")
-            sleep(5 + random() * 2**attempt )
+            sleep(5 * random() * 2**attempt )
             return prompt_gemini(prompt, attempt + 1)
         else:
-            print(attempt, req) # for debugging
+            print("XX", "attempt=", attempt, "prompt len=", len(prompt), req) # for debugging
             raise e
     return ans
 

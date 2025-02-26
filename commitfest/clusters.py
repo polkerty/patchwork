@@ -2,6 +2,7 @@ from repo import get_threads_of_last_n_commits
 from analyze_thread import parse_thread, summarize_thread_for_predicting_committer
 from tf_idf import compute_tfidf_top_terms
 from predict_committer import train_committer_model
+from random import shuffle, seed
 
 from cache import cache_results
 from worker import run_jobs
@@ -32,17 +33,24 @@ def get_valid_repo_threads(repo, commits):
     ] for thread, text in valid_threads.items()]
 
 def main():
+    seed("foo")
+
     threads = get_valid_repo_threads('~/postgres/postgres', 10000)
 
     print(f'Got {len(threads)} threads')
     print(threads[0])
 
-    top_committers = Counter([committers for text, committers, thread in threads])
+    threads_of_valid_len = [t for t in threads if len(t[0]) < 3500000]
+    print(f"Filtered out {len(threads) - len(threads_of_valid_len)} threads ({round(100*(len(threads)-len(threads_of_valid_len))/len(threads))}%)")
+
+    top_committers = Counter([committers for text, committers, thread in threads_of_valid_len])
     for item, count in top_committers.most_common():
         print(f'{item}\t{count}')
 
     # only consider committers with at least 50 commits
     threads_by_active_committers = [(text, committer, thread) for text, committer, thread in threads if top_committers[committer] >= 50]
+
+
 
     # with open('skip_terms.txt', 'r') as skip_file:
     #     skip_terms = skip_file.read().split('\n')
@@ -50,13 +58,13 @@ def main():
     # print("Terms to skip: ", skip_terms)
 
     # start with just a little data
-    threads_by_active_committers = threads_by_active_committers[:1000]
+    # threads_by_active_committers = threads_by_active_committers[:1000]
 
     # now, summarize the threads.
     summarized_threads = run_jobs(
         summarize_thread_for_predicting_committer, 
         threads_by_active_committers,
-        max_workers=10,
+        max_workers=4,
         payload_arg_key_fn= lambda x: x[2]
     )
 
@@ -64,6 +72,7 @@ def main():
         print(thread_id, summary)
 
     training_data = [(summarized_threads[thread], committer) for _text, committer, thread in threads_by_active_committers ]
+    shuffle(training_data)
     train_committer_model(training_data)
 
     # terms = compute_tfidf_top_terms(threads, 1000)
