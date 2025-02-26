@@ -64,5 +64,23 @@ CREATE TABLE thread_stats (
 
 \copy thread_stats FROM 'thread_stats.csv' DELIMITER ',' CSV HEADER;
 
+DROP TABLE IF EXISTS predicted_committer cascade;
+
+CREATE TABLE predicted_committer (
+    thread text primary key,
+    a text,
+    score_a float,
+    terms_a text,
+    b text,
+    score_b float,
+    terms_b text,
+    c text,
+    score_c float,
+    terms_c text
+);
+
+
+\copy predicted_committer FROM 'predicted_committers.csv' DELIMITER ',' CSV HEADER;
+
 
 COMMIT;

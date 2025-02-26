@@ -118,34 +118,74 @@ def predict_top_committers(
     model, 
     vectorizer, 
     text: str, 
-    top_n: int = 3
+    top_n: int = 3,
+    top_term_count: int = 5
 ):
     """
     Given a trained model and vectorizer, predict the top N most likely committers
-    for a single piece of text.
+    for a single piece of text. For each predicted class, list only the top
+    terms that increased the odds (positive contribution).
 
     Parameters:
         model: A trained classifier (e.g., LogisticRegression).
         vectorizer: The fitted TfidfVectorizer used during training.
         text (str): The mailing list text to classify.
         top_n (int): Number of top committers to return.
+        top_term_count (int): Number of top contributing (positive) terms to list per committer.
 
     Returns:
-        List of tuples (committer, probability), sorted by descending probability.
+        List of tuples:
+          [
+            (committer, probability, [(term, contribution), ...]),
+            ...
+          ],
+        sorted by descending probability.
     """
 
-    # 1. Transform the text into TF-IDF features.
-    X_tfidf = vectorizer.transform([text])  # wrap text in a list
+    # 1. Transform the text into TF-IDF features
+    X_tfidf = vectorizer.transform([text])  # shape = (1, n_features)
 
-    # 2. Get class probabilities (predict_proba returns an array of shape [n_samples, n_classes])
-    probas = model.predict_proba(X_tfidf)[0]  # for single text, take the 0th row
+    # 2. Get class probabilities
+    probas = model.predict_proba(X_tfidf)[0]  # single doc => index [0]
 
-    # 3. Sort the probabilities in descending order and pick the top_n
-    class_indices_sorted = np.argsort(probas)[::-1]  # highest prob first
+    # 3. Sort probabilities (descending) to get top_n classes
+    class_indices_sorted = np.argsort(probas)[::-1]
     top_indices = class_indices_sorted[:top_n]
 
-    # 4. Map indices to class labels and probabilities
-    #    model.classes_ gives the labels in the order used internally
-    results = [(str(model.classes_[i]), float(probas[i])) for i in top_indices]
+    # Convert sparse row to dense array for local contribution analysis
+    doc_values = X_tfidf.toarray().ravel()
+    feature_names = vectorizer.get_feature_names_out()
+
+    results = []
+    for class_idx in top_indices:
+        class_label = model.classes_[class_idx]
+        class_prob = probas[class_idx]
+
+        # 4. Compute contributions of each term = coef * doc's TF-IDF
+        class_coefs = model.coef_[class_idx]
+        contributions = class_coefs * doc_values
+
+        # 5. Filter out negative or zero contributions (keep only positive)
+        #    i.e., terms that truly increase the odds for this class
+        positive_contributions = [
+            (feat_i, contr_value)
+            for feat_i, contr_value in enumerate(contributions)
+            if contr_value > 0
+        ]
+
+        # 6. Sort descending by the contribution value
+        positive_contributions.sort(key=lambda x: x[1], reverse=True)
+
+        # 7. Pick the top 'top_term_count' terms
+        top_pos_contribs = positive_contributions[:top_term_count]
+
+        # 8. Build the term list: [(term, contribution), ...]
+        top_terms = []
+        for feat_i, contr_value in top_pos_contribs:
+            term = feature_names[feat_i]
+            # top_terms.append((term, float(contr_value)))
+            top_terms.append(term)
+
+        results.append((str(class_label), float(class_prob), top_terms))
 
     return results
