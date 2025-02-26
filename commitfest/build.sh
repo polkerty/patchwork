@@ -35,3 +35,9 @@ psql -p 6565 -c "\
   SELECT json_agg(row_to_json(t)) \
   FROM (SELECT * FROM patch_message) t;" \
   -t -A > ../data/patch_message.json
+
+# predicted_committer: which of the committers do we think should look at a patch, and why? 
+psql -p 6565 -c "\
+  SELECT json_agg(row_to_json(t)) \
+  FROM (SELECT * FROM predicted_committer) t;" \
+  -t -A > ../data/predicted_committers.json
