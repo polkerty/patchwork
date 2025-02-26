@@ -7,18 +7,20 @@ import json
 from pprint import pprint
 from cache import cache_results
 import re
+from time import sleep
+from random import random
 
 load_dotenv()
 
 
-def prompt_gemini(prompt):
+def prompt_gemini(prompt, attempt=0):
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("Must provide GEMINI_API_KEY env variable")
    
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
    
-    res = requests.post(url, 
+    req = requests.post(url, 
         json={
         "contents": [{
              "parts":[{"text": prompt}]
@@ -28,10 +30,16 @@ def prompt_gemini(prompt):
     ).json()
 
     try:
-        ans = res["candidates"][0]["content"]["parts"][0]["text"] # I try not to design schemas, but when I do, I hide the actual result six levels deep.
+        ans = req["candidates"][0]["content"]["parts"][0]["text"] # I try not to design schemas, but when I do, I hide the actual result six levels deep.
     except Exception as e:
-        print(res.text) # for debugging
-        raise
+        if attempt < 10 and 'error' in req and 'code' in req['error'] and req['error']['code'] == 429:
+            # backoff
+            print(f"Retrying try #{attempt + 1}")
+            sleep(5 + random() * 2**attempt )
+            return prompt_gemini(prompt, attempt + 1)
+        else:
+            print(attempt, req) # for debugging
+            raise e
     return ans
 
 # Gemini loves wrapping its JSON in a "```json ```", no matter what we tell it, so try stripping this out if it's present.
@@ -171,10 +179,11 @@ def summarize_thread_for_predicting_committer(args):
 
     prompt = f'''
 
-        You are an expert in Postgresql. Please read the following mailing list thread and summarize it into a medium-
-        length paragraph.
-        DO NOT include any names or other information about the people in the thread. Focus on technical concepts,
-        and provide a list of keywords at the end. Here's the thread:
+        You are an expert in Postgresql. Please read the following mailing list thread and output a space-separated
+        list of 20-30 keywords, lowercase, with no punctuation of any kind
+        DO NOT include any names or other information about the people in the thread. Focus on technical concepts
+        and file/function references found in the text. Do not add generic PostgreSQL terms, since we already
+        know this is about PostgreSQL, but instead focus on the specific terms you find in the text.
 
         ========
         { text }
@@ -182,9 +191,11 @@ def summarize_thread_for_predicting_committer(args):
         ========
         To repeat the request:
 
-        Please read the preceding mailing list thread and summarize it into a medium-length paragraph.
-        DO NOT include any names or other information about the people in the thread. Focus on technical concepts,
-        and provide a list of keywords at the end. 
+        Please read the preceding mailing list thread and output a space-separated
+        list of 20-30 keywords, lowercase, with no punctuation of any kind
+        DO NOT include any names or other information about the people in the thread. Focus on technical concepts
+        and file/function references found in the text. Do not add generic PostgreSQL terms, since we already
+        know this is about PostgreSQL, but instead focus on the specific terms you find in the text.
     '''
 
     summary = prompt_gemini(prompt)

@@ -50,20 +50,21 @@ def main():
     # print("Terms to skip: ", skip_terms)
 
     # start with just a little data
-    threads_by_active_committers = threads_by_active_committers[:100]
+    threads_by_active_committers = threads_by_active_committers[:1000]
 
     # now, summarize the threads.
     summarized_threads = run_jobs(
         summarize_thread_for_predicting_committer, 
         threads_by_active_committers,
-        max_workers=25,
+        max_workers=10,
         payload_arg_key_fn= lambda x: x[2]
     )
 
     for thread_id, summary in summarized_threads.items():
         print(thread_id, summary)
 
-    # train_committer_model(threads_by_active_committers, skip_terms)
+    training_data = [(summarized_threads[thread], committer) for _text, committer, thread in threads_by_active_committers ]
+    train_committer_model(training_data)
 
     # terms = compute_tfidf_top_terms(threads, 1000)
     # # for manual inspection
