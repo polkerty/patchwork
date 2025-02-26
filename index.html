@@ -66,8 +66,8 @@
         const STATE = {};
 
         const FILTER_ENUM = {
+            "RECOMMENDED": "Recommended patches for you to check",
             "ALL": "All patches",
-            "NEW": "Patches the LLM thinks need a review",
             "MY_REVIEWS": "My mailing threads",
             "MY_PATCHES": "Patches I wrote"
         }
@@ -179,7 +179,7 @@
                 case FILTER_ENUM.ALL:
                     // nothing to filter
                     break;
-                case FILTER_ENUM.NEW:
+                case FILTER_ENUM.RECOMMENDED:
                     patches = patches.filter(patch => patch.newReviewer === 'Yes');
                     break;
                 case FILTER_ENUM.MY_REVIEWS:
@@ -680,7 +680,7 @@
 
             STATE.contributors = [... new Set(DATA.rankings.map(x => x.reviewer))];
             STATE.lastUpdated = new Date(Math.max.apply(null, DATA.threadStats.map(thread => new Date(thread.last_activity))));
-            STATE.filter = FILTER_ENUM.ALL;
+            STATE.filter = FILTER_ENUM.RECOMMENDED;
 
 
             // 2. Set up UX
