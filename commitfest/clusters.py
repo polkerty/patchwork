@@ -1,6 +1,7 @@
 from repo import get_threads_of_last_n_commits
 from analyze_thread import parse_thread
 from tf_idf import compute_tfidf_top_terms
+from predict_committer import train_committer_model
 
 from cache import cache_results
 from worker import run_jobs
@@ -38,6 +39,11 @@ def main():
     top_committers = Counter([committers for text, committers in threads])
     for item, count in top_committers.most_common():
         print(f'{item}\t{count}')
+
+    # only consider committers with at least 50 commits
+    threads_by_active_committers = [(text, committer) for text, committer in threads if top_committers[committer] >= 50]
+
+    train_committer_model(threads_by_active_committers)
 
     # terms = compute_tfidf_top_terms(threads, 1000)
     # # for manual inspection
