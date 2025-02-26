@@ -104,7 +104,17 @@ def predict_committers(thread_ids):
     predicted_committers = {}
     for thread, text in summarized_threads.items():
         prediction = predict_top_committers(model, vectorizer, text, 3)
-        predicted_committers[thread] = prediction
+        a, score_a = prediction[0]
+        b, score_b = prediction[1]
+        c, score_c = prediction[2]
+        predicted_committers[thread] = {
+            "a": a,
+            "score_a": score_a,
+            "b": b,
+            "score_b": score_b,
+            "c": c,
+            "score_c": score_c
+        }
 
     return predicted_committers
 
