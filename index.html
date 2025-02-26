@@ -316,14 +316,14 @@
             const threads = STATE.threadsOfPatch[entry.id].map(thread => STATE.byThread[thread]);
 
             const myCommitReasons = {};
-            for ( const thread of threads ) {
-                if ( thread.predictedCommitters.a === STATE.contributor ) {
+            for (const thread of threads) {
+                if (thread.predictedCommitters.a === STATE.contributor) {
                     myCommitReasons[thread.id] = thread.predictedCommitters.terms_a;
                 }
-                else if ( thread.predictedCommitters.b === STATE.contributor ) {
+                else if (thread.predictedCommitters.b === STATE.contributor) {
                     myCommitReasons[thread.id] = thread.predictedCommitters.terms_b;
                 }
-                else if ( thread.predictedCommitters.c === STATE.contributor ) {
+                else if (thread.predictedCommitters.c === STATE.contributor) {
                     myCommitReasons[thread.id] = thread.predictedCommitters.terms_c;
                 }
             }
@@ -397,11 +397,11 @@
                             }
                         ]
                     },
+                    {
+                        nodeName: "BR"
+                    },
                     ...(myCommitReasons[thread.id] ?
                         [{
-                            nodeName: "BR"
-                        },
-                        {
                             nodeName: "STRONG",
                             attributes: {
                                 style: "margin-right: 10px;"
@@ -420,7 +420,7 @@
                             childNodes: [
                                 {
                                     nodeName: "#text",
-                                    data: myCommitReasons[thread.id] 
+                                    data: myCommitReasons[thread.id]
                                 }
                             ]
                         },
