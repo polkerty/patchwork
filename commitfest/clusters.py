@@ -32,9 +32,8 @@ def get_valid_repo_threads(repo, commits):
         thread
     ] for thread, text in valid_threads.items()]
 
-def main():
-    seed("foo")
-
+@cache_results()
+def prepare_committer_training_data():
     threads = get_valid_repo_threads('~/postgres/postgres', 10000)
 
     print(f'Got {len(threads)} threads')
@@ -48,9 +47,7 @@ def main():
         print(f'{item}\t{count}')
 
     # only consider committers with at least 50 commits
-    threads_by_active_committers = [(text, committer, thread) for text, committer, thread in threads if top_committers[committer] >= 50]
-
-
+    threads_by_active_committers = [(text, committer, thread) for text, committer, thread in threads_of_valid_len if top_committers[committer] >= 50]
 
     # with open('skip_terms.txt', 'r') as skip_file:
     #     skip_terms = skip_file.read().split('\n')
@@ -72,6 +69,15 @@ def main():
         print(thread_id, summary)
 
     training_data = [(summarized_threads[thread], committer) for _text, committer, thread in threads_by_active_committers ]
+
+    return training_data
+
+
+
+def main():
+    seed("foo")
+    training_data = prepare_committer_training_data()
+
     shuffle(training_data)
     train_committer_model(training_data)
 
