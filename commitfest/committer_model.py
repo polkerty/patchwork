@@ -111,7 +111,7 @@ def train_committer_model(
     print("Model training & evaluation complete.\n")
 
     # Optionally return objects if needed
-    # return model, vectorizer, (train_accuracy, test_accuracy, cv_scores, class_report, conf_mat)
+    return model, vectorizer, (train_accuracy, test_accuracy, cv_scores, class_report, conf_mat)
 
 
 def predict_top_committers(
@@ -146,6 +146,6 @@ def predict_top_committers(
 
     # 4. Map indices to class labels and probabilities
     #    model.classes_ gives the labels in the order used internally
-    results = [(model.classes_[i], probas[i]) for i in top_indices]
+    results = [(str(model.classes_[i]), float(probas[i])) for i in top_indices]
 
     return results

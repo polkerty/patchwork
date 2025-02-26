@@ -175,7 +175,7 @@ def explain_thread(text, thread_id): # thread_id argument used for cacheing
 @cache_results(0, 2)
 def summarize_thread_for_predicting_committer(args):
 
-    text, committer, thread_id = args
+    text, _not_used, _thread_id = args
 
     prompt = f'''
 

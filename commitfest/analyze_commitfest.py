@@ -1,6 +1,7 @@
 
 from scrape import extract_commitfest_patch_ids, get_patch_info
 from analyze_thread import analyze_thread
+from predict_committers import predict_committers
 from attachments import analyze_attachment
 from worker import run_jobs
 from write_csv import dict_to_csv
@@ -18,8 +19,12 @@ def analyze_commitfest(id):
     patch_info = run_jobs(get_patch_info, patch_ids, 5)
     pprint(patch_info)
 
+    # top-line analysis
     message_ids = [message_id for patch in patch_info.values() for message_id in patch['message_ids']]
     threads = run_jobs(analyze_thread, message_ids, max_workers=5)
+
+    # target committer analysis
+    predicted_committers = predict_committers(message_ids)
 
     thread_summaries = {id: thread["explanation"] for id, thread in threads.items()}
     thread_stats = {id: thread["stats"] for id, thread in threads.items()}
@@ -41,6 +46,7 @@ def analyze_commitfest(id):
     dict_to_csv(attachment_links, "attachment_links.csv")
     dict_to_csv(attachment_stats_flattened, "attachment_stats.csv")
     dict_to_csv(message_of_patch, "message_patch.csv")
+    dict_to_csv(predicted_committers, "predicted_committers.csv")
 
 if __name__ == '__main__':
     analyze_commitfest(52)

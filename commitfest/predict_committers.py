@@ -1,7 +1,6 @@
 from repo import get_threads_of_last_n_commits
 from analyze_thread import parse_thread, summarize_thread_for_predicting_committer
-from tf_idf import compute_tfidf_top_terms
-from predict_committer import train_committer_model
+from committer_model import train_committer_model, predict_top_committers
 from random import shuffle, seed
 
 from cache import cache_results
@@ -72,6 +71,42 @@ def prepare_committer_training_data():
 
     return training_data
 
+def predict_committers(thread_ids):
+    # build model on the fly.
+    # doesn't take too long once the training data
+    # is downloaded and cached - but boy, that takes a while!
+    print("Getting data to train commiitter prediction model...")
+    seed("foo")
+    training_data = prepare_committer_training_data()
+    shuffle(training_data)
+    print("Training committer prediction model...")
+    model, vectorizer, _stats = train_committer_model(training_data)
+
+    print("Downloading threads for committer model...")
+    threads = run_jobs(parse_thread, thread_ids, max_workers=5)
+    threads_flat = [[
+        text,
+        None, # this holds the committer in training, but of course we don't this here,
+              # since it's what we're trying to predict!
+        thread
+    ] for thread, text in threads.items()]
+
+    print("Extracting keywords from provided threads...")
+    summarized_threads = run_jobs(
+        summarize_thread_for_predicting_committer, 
+        threads_flat,
+        max_workers=4, # we're trying to stay under 4 million tokens/min, but not too far under.
+                       # this seems experimentally to be a good setting. 
+        payload_arg_key_fn= lambda x: x[2]
+    )
+
+    # And now we run the model. Not multithreaded yet
+    predicted_committers = {}
+    for thread, text in summarized_threads.items():
+        prediction = predict_top_committers(model, vectorizer, text, 3)
+        predicted_committers[thread] = prediction
+
+    return predicted_committers
 
 
 def main():
