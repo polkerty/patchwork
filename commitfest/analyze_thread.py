@@ -27,8 +27,11 @@ def prompt_gemini(prompt):
         headers={ 'Content-Type': 'application/json' }
     ).json()
 
-    ans = res["candidates"][0]["content"]["parts"][0]["text"] # I try not to design schemas, but when I do, I hide the actual result six levels deep.
-
+    try:
+        ans = res["candidates"][0]["content"]["parts"][0]["text"] # I try not to design schemas, but when I do, I hide the actual result six levels deep.
+    except Exception as e:
+        print(res.text) # for debugging
+        raise
     return ans
 
 # Gemini loves wrapping its JSON in a "```json ```", no matter what we tell it, so try stripping this out if it's present.
@@ -159,6 +162,37 @@ def explain_thread(text, thread_id): # thread_id argument used for cacheing
     except:
         print(summary)
         raise ValueError("Unable to parse LLM response as JSON")
+
+
+@cache_results(0, 2)
+def summarize_thread_for_predicting_committer(args):
+
+    text, committer, thread_id = args
+
+    prompt = f'''
+
+        You are an expert in Postgresql. Please read the following mailing list thread and summarize it into a medium-
+        length paragraph.
+        DO NOT include any names or other information about the people in the thread. Focus on technical concepts,
+        and provide a list of keywords at the end. Here's the thread:
+
+        ========
+        { text }
+
+        ========
+        To repeat the request:
+
+        Please read the preceding mailing list thread and summarize it into a medium-length paragraph.
+        DO NOT include any names or other information about the people in the thread. Focus on technical concepts,
+        and provide a list of keywords at the end. 
+    '''
+
+    summary = prompt_gemini(prompt)
+
+    return summary
+
+
+
 
 
 if __name__ == '__main__':

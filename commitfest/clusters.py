@@ -1,5 +1,5 @@
 from repo import get_threads_of_last_n_commits
-from analyze_thread import parse_thread
+from analyze_thread import parse_thread, summarize_thread_for_predicting_committer
 from tf_idf import compute_tfidf_top_terms
 from predict_committer import train_committer_model
 
@@ -27,7 +27,8 @@ def get_valid_repo_threads(repo, commits):
     
     return [[
         text,
-        committer_of_thread[thread]
+        committer_of_thread[thread],
+        thread
     ] for thread, text in valid_threads.items()]
 
 def main():
@@ -36,14 +37,33 @@ def main():
     print(f'Got {len(threads)} threads')
     print(threads[0])
 
-    top_committers = Counter([committers for text, committers in threads])
+    top_committers = Counter([committers for text, committers, thread in threads])
     for item, count in top_committers.most_common():
         print(f'{item}\t{count}')
 
     # only consider committers with at least 50 commits
-    threads_by_active_committers = [(text, committer) for text, committer in threads if top_committers[committer] >= 50]
+    threads_by_active_committers = [(text, committer, thread) for text, committer, thread in threads if top_committers[committer] >= 50]
 
-    train_committer_model(threads_by_active_committers)
+    # with open('skip_terms.txt', 'r') as skip_file:
+    #     skip_terms = skip_file.read().split('\n')
+    
+    # print("Terms to skip: ", skip_terms)
+
+    # start with just a little data
+    threads_by_active_committers = threads_by_active_committers[:100]
+
+    # now, summarize the threads.
+    summarized_threads = run_jobs(
+        summarize_thread_for_predicting_committer, 
+        threads_by_active_committers,
+        max_workers=25,
+        payload_arg_key_fn= lambda x: x[2]
+    )
+
+    for thread_id, summary in summarized_threads.items():
+        print(thread_id, summary)
+
+    # train_committer_model(threads_by_active_committers, skip_terms)
 
     # terms = compute_tfidf_top_terms(threads, 1000)
     # # for manual inspection
