@@ -11,7 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet"> -->
     <style>
-        body, table {
+        body,
+        table {
             /* font-family: "Atkinson Hyperlegible Mono", serif;
             font-size: smaller; */
         }
@@ -36,9 +37,12 @@
         <h1>03/2025 Commitfest patch ranker (experimental)</h1>
         <p>How it works: LLM reads through mailing list threads to figure out the status, and we cross-reference the
             files changed to the ones you've changed historically to create a custom ranking of relevant patches
-            for anyone who's committed to Postgres in the past, or been credited with an <code>Author:</code> line in the commit message. 
-            <a href="https://github.com/polkerty/patchwork" target="_blank" >Repository</a> | <a href="mailto:jacob.brazeal@gmail.com" >Contact</a> |
-            <span id="last-updated"></span> Name matching between mailing lists, git repo, and commitfest is approximate and can break (especially
+            for anyone who's committed to Postgres in the past, or been credited with an <code>Author:</code> line in
+            the commit message.
+            <a href="https://github.com/polkerty/patchwork" target="_blank">Repository</a> | <a
+                href="mailto:jacob.brazeal@gmail.com">Contact</a> |
+            <span id="last-updated"></span> Name matching between mailing lists, git repo, and commitfest is approximate
+            and can break (especially
             when people have multiple handles.)
         </p>
         <div id="controls">
@@ -79,15 +83,15 @@
 
             html += `
                     <select onChange="setContributor(event)"  >
-                        <option value="" ${(STATE.contributor??"") === "" ? 'selected':''} >Select your name...</option>
-                        ${STATE.contributors.map(c => `<option value="${c}" ${(STATE.contributor??"") === c ? 'selected':''} >${c}</option>`)}
+                        <option value="" ${(STATE.contributor ?? "") === "" ? 'selected' : ''} >Select your name...</option>
+                        ${STATE.contributors.map(c => `<option value="${c}" ${(STATE.contributor ?? "") === c ? 'selected' : ''} >${c}</option>`)}
                     </select>
                     `;
 
             html += "<strong style='margin: 0 10px;'>Filter:</strong>";
 
-            for ( const [filter, name] of Object.entries(FILTER_ENUM)) {
-                if ( STATE.filter === name ) {
+            for (const [filter, name] of Object.entries(FILTER_ENUM)) {
+                if (STATE.filter === name) {
                     html += "<strong>" + name + '</strong>';
                 } else {
                     html += `<a href='javascript:void(0)' onClick='setFilter("${name}")' >${name}</a>`
@@ -122,9 +126,37 @@
             // 2. decorate
             for (const patch of patches) {
                 patch.rankData = rankings[patch.patch_id];
-                patch.rank = rankings[patch.patch_id]?.rank ?? patches.length;
+                patch.fileSimilarityRank = rankings[patch.patch_id]?.rank ?? patches.length;
                 patch.commitfest = { ...STATE.patchById[patch.patch_id] };
                 patch.threads = STATE.threadsOfPatch[patch.patch_id].map(thread => STATE.byThread[thread]);
+
+                patch.constructedRank = (() => {
+                    best = patch.fileSimilarityRank;
+                    for (const thread of patch.threads) {
+                        if (thread.predictedCommitters.a === STATE.contributor) {
+                            const score = -3000 - (100 * thread.predictedCommitters.score_a);
+                            if (score < best) {
+                                best = score;
+                                patch.selfCommitReasons = thread.predictedCommitters.terms_a;
+                            }
+                        }
+                        else if (thread.predictedCommitters.b === STATE.contributor) {
+                            const score = -2000 - (100 * thread.predictedCommitters.score_b);
+                            if (score < best) {
+                                best = score;
+                                patch.selfCommitReasons = thread.predictedCommitters.terms_b;
+                            }
+                        }
+                        else if (thread.predictedCommitters.c === STATE.contributor) {
+                            const score = -1000 - (100 * thread.predictedCommitters.score_c);
+                            if (score < best) {
+                                best = score;
+                                patch.selfCommitReasons = thread.predictedCommitters.terms_c;
+                            }
+                        }
+                    }
+                    return best;
+                })();
 
                 // hoisting some thread data up for each of use in the table
                 patch.newReviewer = patch.threads.map(t => t.would_benefit_from_new_reviewer).filter(v => v === 'YES').length > 0
@@ -137,10 +169,13 @@
                 patch.patch_id_3 = patch.patch_id;
             }
 
-            patches = patches.sort((a, b) => a.rank < b.rank ? -1 : 1);
+            patches = patches.sort((a, b) => a.constructedRank < b.constructedRank ? -1 : 1);
+            for (let i = 0; i < patches.length; ++i) {
+                patches[i].rank = i + 1;
+            }
 
             // 3. filter according to filter rules 
-            switch ( STATE.filter ) {
+            switch (STATE.filter) {
                 case FILTER_ENUM.ALL:
                     // nothing to filter
                     break;
@@ -226,7 +261,7 @@
                             data: "newReviewer"
                         },
                         {
-                            text: "How similar to files you've committed in the past? (Ranked)",
+                            text: "Rank for you",
                             data: "rank",
                         },
                         {
@@ -279,6 +314,20 @@
         const renderThreads = function (data, cell, dataIndex, cellIndex) {
             const entry = STATE.patchById[data[0].data]; // forgive me, it's a demo
             const threads = STATE.threadsOfPatch[entry.id].map(thread => STATE.byThread[thread]);
+
+            const myCommitReasons = {};
+            for ( const thread of threads ) {
+                if ( thread.predictedCommitters.a === STATE.contributor ) {
+                    myCommitReasons[thread.id] = thread.predictedCommitters.terms_a;
+                }
+                else if ( thread.predictedCommitters.b === STATE.contributor ) {
+                    myCommitReasons[thread.id] = thread.predictedCommitters.terms_b;
+                }
+                else if ( thread.predictedCommitters.c === STATE.contributor ) {
+                    myCommitReasons[thread.id] = thread.predictedCommitters.terms_c;
+                }
+            }
+
             cell.childNodes = [{
                 nodeName: "DIV",
                 childNodes: threads.flatMap(thread =>
@@ -325,6 +374,60 @@
                     {
                         nodeName: "BR"
                     },
+                    {
+                        nodeName: "STRONG",
+                        attributes: {
+                            style: "margin-right: 10px;"
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: "Suggested Committers:"
+                            }
+                        ]
+                    },
+                    {
+                        nodeName: "SPAN",
+                        attributes: {
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: thread.predictedCommitters.a + " / " + thread.predictedCommitters.b + " / " + thread.predictedCommitters.c
+                            }
+                        ]
+                    },
+                    ...(myCommitReasons[thread.id] ?
+                        [{
+                            nodeName: "BR"
+                        },
+                        {
+                            nodeName: "STRONG",
+                            attributes: {
+                                style: "margin-right: 10px;"
+                            },
+                            childNodes: [
+                                {
+                                    nodeName: "#text",
+                                    data: "Topics in thread associated with me: "
+                                }
+                            ]
+                        },
+                        {
+                            nodeName: "SPAN",
+                            attributes: {
+                            },
+                            childNodes: [
+                                {
+                                    nodeName: "#text",
+                                    data: myCommitReasons[thread.id] 
+                                }
+                            ]
+                        },
+                        {
+                            nodeName: "BR"
+                        },]
+                        : []),
                     {
                         nodeName: "STRONG",
                         attributes: {
@@ -528,6 +631,15 @@
                 }
                 byThread[thread.message_id].stats = thread;
             }
+            for (const thread of DATA.predictedCommitters) {
+                if (!byThread[thread.thread]) {
+                    // whoops...
+                    console.log("No summary for thread: " + thread.thread);
+                    continue;
+                }
+                byThread[thread.thread].predictedCommitters = thread;
+            }
+
 
             return {
                 patchById,
@@ -544,14 +656,15 @@
                 rankings,
                 patches,
                 threadStats,
-                patchMessage
+                patchMessage,
+                predictedCommitters
             ] = await Promise.all([
                 'thread_summaries.json',
                 'contrib_tf_idf.json',
                 'patches.json',
                 'thread_stats.json',
                 'patch_message.json',
-
+                'predicted_committers.json',
             ].map(url => fetch(dataBaseURL + url).then(x => x.json())))
 
             Object.assign(DATA, {
@@ -559,13 +672,14 @@
                 rankings,
                 patches,
                 threadStats,
-                patchMessage
+                patchMessage,
+                predictedCommitters
             });
 
             Object.assign(STATE, constructLookups());
 
             STATE.contributors = [... new Set(DATA.rankings.map(x => x.reviewer))];
-            STATE.lastUpdated = new Date(Math.max.apply(null,DATA.threadStats.map(thread => new Date(thread.last_activity))));
+            STATE.lastUpdated = new Date(Math.max.apply(null, DATA.threadStats.map(thread => new Date(thread.last_activity))));
             STATE.filter = FILTER_ENUM.ALL;
 
 
