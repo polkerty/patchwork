@@ -1,17 +1,18 @@
 
-from scrape import extract_commitfest_patch_ids, get_patch_info
+from scrape import parse_commitfest_page, get_patch_info
 from analyze_thread import analyze_thread
 from predict_committers import predict_committers
 from attachments import analyze_attachment
 from worker import run_jobs
-from write_csv import dict_to_csv
+from write_csv import dict_to_csv, array_of_dict_to_csv
 from pprint import pprint
 
 
 def analyze_commitfest(id):  
     #1. Scrape the list of patches.
     url = f"https://commitfest.postgresql.org/{id}/"
-    patch_ids = extract_commitfest_patch_ids(url)
+    patch_ids, contributer_names = parse_commitfest_page(url)
+    csv_of_contributor_names = [{"name": name } for name in set(contributer_names)]
 
     print(patch_ids)
 
@@ -39,7 +40,9 @@ def analyze_commitfest(id):
     message_of_patch = { patch_id: {"message_id": message_id} for patch_id, patch in patch_info.items() for message_id in patch['message_ids']}
 
     print(attachment_stats_flattened)
-    # Write patch and thread data to files for future analysis
+
+    
+
     dict_to_csv(patch_info, "patches.csv")
     dict_to_csv(thread_summaries, "thread_summaries.csv")
     dict_to_csv(thread_stats, "thread_stats.csv")
@@ -47,6 +50,8 @@ def analyze_commitfest(id):
     dict_to_csv(attachment_stats_flattened, "attachment_stats.csv")
     dict_to_csv(message_of_patch, "message_patch.csv")
     dict_to_csv(predicted_committers, "predicted_committers.csv")
+    array_of_dict_to_csv(csv_of_contributor_names, "contributor_names.csv")
+
 
 if __name__ == '__main__':
     analyze_commitfest(52)

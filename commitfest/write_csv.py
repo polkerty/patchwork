@@ -25,3 +25,20 @@ def dict_to_csv(data: dict, filename: str):
             writer.writerow({"ID": key, **values})
 
     print(f"CSV file '{filename}' created successfully.")
+
+
+def array_of_dict_to_csv(data, filename):
+    """
+    Write an array of dictionaries to a CSV file.
+
+    Args:
+        data (list of dict): Each dictionary represents a row in the CSV.
+        filename (str): The file path to write the CSV data.
+    """
+    # Extract field names from the first dictionary
+    fieldnames = list(data[0].keys()) if data else []
+
+    with open(filename, "w", newline="") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(data)

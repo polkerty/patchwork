@@ -82,5 +82,18 @@ CREATE TABLE predicted_committer (
 
 \copy predicted_committer FROM 'predicted_committers.csv' DELIMITER ',' CSV HEADER;
 
+DROP TABLE IF EXISTS contributor_names cascade;
+
+CREATE TABLE contributor_names (
+    name text primary key
+);
+
+
+\copy contributor_names FROM 'contributor_names.csv' DELIMITER ',' CSV HEADER;
+
+create or replace view contributors as 
+    SELECT name display_name, normalize_name_email(name) name
+    from contributor_names
+;
 
 COMMIT;

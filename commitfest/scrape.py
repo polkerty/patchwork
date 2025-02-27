@@ -102,9 +102,12 @@ def _helper_extract_attachment_links(text):
         return []
 
 # Scraping the commitfest page
-def extract_commitfest_patch_ids(url):
+def parse_commitfest_page(url):
     response = requests.get(url)
     response.raise_for_status()  # Raise an error for bad responses
+
+
+    # Get patch IDs
     soup = BeautifulSoup(response.text, 'html.parser')
 
     # Regex pattern to match the desired links
@@ -117,7 +120,15 @@ def extract_commitfest_patch_ids(url):
         if match:
             ids.append(int(match.group(1)))  # Extract and convert to int
 
-    return ids
+    # Get contributor names
+    authors = soup.find("select", id="id_author")
+
+    option_texts = [option.get_text(strip=True) for option in authors.find_all("option")]
+    parts_list = [name.split(' (') for name in option_texts]
+    names = [parts[0] if len(parts) == 2 else None for parts in parts_list]
+    authors = [name for name in names if name is not None]
+
+    return ids, authors
 
 # Scraping the Patch page
 @cache_results()
