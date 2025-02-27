@@ -38,7 +38,8 @@
         <p>How it works: LLM reads through mailing list threads to figure out the status, and we cross-reference the
             files changed to the ones you've changed historically to create a custom ranking of relevant patches
             for anyone who's committed to Postgres in the past, or been credited with an <code>Author:</code> line in
-            the commit message.
+            the commit message. If you are a committer, we also do a regression analysis of topics you've committed
+            in the past to help recommend patches you might want to commit. 
             <a href="https://github.com/polkerty/patchwork" target="_blank">Repository</a> | <a
                 href="mailto:jacob.brazeal@gmail.com">Contact</a> |
             <span id="last-updated"></span> Name matching between mailing lists, git repo, and commitfest is approximate
