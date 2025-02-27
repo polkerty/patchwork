@@ -42,3 +42,9 @@ psql -p 6565 -c "\
   SELECT json_agg(row_to_json(t)) \
   FROM (SELECT * FROM predicted_committer) t;" \
   -t -A > ../data/predicted_committers.json
+
+# contributor_names: display names for users, and maybe eventually other info 
+psql -p 6565 -c "\
+  SELECT json_agg(row_to_json(t)) \
+  FROM (SELECT * FROM contributors) t;" \
+  -t -A > ../data/contributors.json

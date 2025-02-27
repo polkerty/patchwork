@@ -72,6 +72,10 @@
             "MY_PATCHES": "Patches I wrote"
         }
 
+        function displayName(name) {
+            return STATE.byContributor[name]?.display_name ?? name;
+        }
+
         function setContributor(event) {
             const contributor = event.target.value?.length > 0 ? event.target.value : undefined;
             STATE.contributor = contributor;
@@ -84,7 +88,7 @@
             html += `
                     <select onChange="setContributor(event)"  >
                         <option value="" ${(STATE.contributor ?? "") === "" ? 'selected' : ''} >Select your name...</option>
-                        ${STATE.contributors.map(c => `<option value="${c}" ${(STATE.contributor ?? "") === c ? 'selected' : ''} >${c}</option>`)}
+                        ${STATE.contributors.map(c => `<option value="${c}" ${(STATE.contributor ?? "") === c ? 'selected' : ''} >${displayName(c)}</option>`)}
                     </select>
                     `;
 
@@ -393,7 +397,9 @@
                         childNodes: [
                             {
                                 nodeName: "#text",
-                                data: thread.predictedCommitters.a + " / " + thread.predictedCommitters.b + " / " + thread.predictedCommitters.c
+                                data: displayName(thread.predictedCommitters.a) + " / " + 
+                                    displayName(thread.predictedCommitters.b) + " / " + 
+                                    displayName(thread.predictedCommitters.c)
                             }
                         ]
                     },
@@ -473,7 +479,7 @@
                         childNodes: [
                             {
                                 nodeName: "#text",
-                                data: thread.stats.reviewer_list.join(', ')
+                                data: thread.stats.reviewer_list.map(displayName).join(', ')
                             }
                         ]
                     },
@@ -640,11 +646,17 @@
                 byThread[thread.thread].predictedCommitters = thread;
             }
 
+            const byContributor = {};
+            for ( const contributor of DATA.contributors ) {
+                byContributor[contributor.name] = contributor;
+            }
+
 
             return {
                 patchById,
                 threadsOfPatch,
-                byThread
+                byThread,
+                byContributor,
             }
         }
 
@@ -657,7 +669,8 @@
                 patches,
                 threadStats,
                 patchMessage,
-                predictedCommitters
+                predictedCommitters,
+                contributors,
             ] = await Promise.all([
                 'thread_summaries.json',
                 'contrib_tf_idf.json',
@@ -665,6 +678,7 @@
                 'thread_stats.json',
                 'patch_message.json',
                 'predicted_committers.json',
+                'contributors.json'
             ].map(url => fetch(dataBaseURL + url).then(x => x.json())))
 
             Object.assign(DATA, {
@@ -673,7 +687,8 @@
                 patches,
                 threadStats,
                 patchMessage,
-                predictedCommitters
+                predictedCommitters,
+                contributors
             });
 
             Object.assign(STATE, constructLookups());
