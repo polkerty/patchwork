@@ -126,8 +126,96 @@ def describe_body(key, contents):
 
     return clean_gemini_json(result)
 
-def describe_attachments(contents):
-    pass
+def parse_size_to_bytes(size_str):
+    """
+    Parse a human-readable file size string (e.g., '11.0 KB', '2.9 MB')
+    into an integer number of bytes.
+    """
+    # Replace non-breaking spaces and strip whitespace.
+    size_str = size_str.replace('\xa0', ' ').strip()
+    if not size_str:
+        return 0
+
+    parts = size_str.split()
+    if len(parts) < 2:
+        # If there's no clear unit (just a number?), treat it as bytes
+        try:
+            return int(parts[0])
+        except ValueError:
+            return 0
+
+    try:
+        # Numeric part
+        value = float(parts[0])
+        # Unit part
+        unit = parts[1].lower()
+    except ValueError:
+        return 0
+
+    # Map from unit to multiplier
+    multipliers = {
+        'b': 1,
+        'bytes': 1,
+        'kb': 1024,
+        'mb': 1024 ** 2,
+        'gb': 1024 ** 3
+    }
+
+    # If the unit is not recognized, we'll assume bytes.
+    multiplier = multipliers.get(unit, 1)
+    return int(value * multiplier)
+
+
+def describe_attachments(html_snippet):
+    """
+    Parse the HTML snippet for the attachments table,
+    returning a list of attachments with fields:
+    name, url, size, contentType.
+
+    Only returns attachments with content-type text/x-patch.
+    Converts the human-readable size to an integer (bytes).
+    """
+    soup = BeautifulSoup(html_snippet, "html.parser")
+    attachments_table = soup.find("table", class_="message-attachments")
+    if not attachments_table:
+        return []
+    
+    attachments = []
+    tbody = attachments_table.find("tbody")
+    if not tbody:
+        return []
+
+    rows = tbody.find_all("tr")
+    
+    for row in rows:
+        link_cell = row.find("th")
+        link_tag = link_cell.find("a") if link_cell else None
+        name = link_tag.text.strip() if link_tag else None
+        url  = link_tag["href"] if link_tag and link_tag.has_attr("href") else None
+        
+        cells = row.find_all("td")
+        if len(cells) != 2:
+            continue
+        
+        content_type = cells[0].get_text(strip=True)
+        size_str = cells[1].get_text(strip=True)
+        
+        # Filter only text/x-patch
+        if content_type != "text/x-patch":
+            continue
+        
+        # Convert size to bytes
+        size_bytes = parse_size_to_bytes(size_str)
+        
+        attachments.append({
+            "name": name,
+            "url": url,
+            "size": size_bytes,
+            "contentType": content_type
+        })
+    
+    return attachments
+
 
 
 
