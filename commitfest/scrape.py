@@ -4,19 +4,23 @@ import re
 from cache import cache_results
 
 # Scraping the mailing list 
-
 @cache_results()
-def parse_thread(id):
+def fetch_thread(id):
     url = f'https://www.postgresql.org/message-id/flat/{id}'
-    main_text_id = 'pgContentWrap'
 
     response = requests.get(url)
-    
     if response.status_code != 200:
         err = f"Failed to fetch the page for {id}: {response.status_code}"
         raise ValueError(err)
 
-    soup = BeautifulSoup(response.text, "html.parser")
+    return response.text
+
+@cache_results()
+def parse_thread(id):
+    text = fetch_thread(id)
+    soup = BeautifulSoup(text, "html.parser")
+
+    main_text_id = 'pgContentWrap'
     
     # Find the div with the given id name
     div = soup.find("div", id=main_text_id)
@@ -87,7 +91,7 @@ def _helper_extract_from_and_date(soup):
 
 def _helper_extract_attachment_links(text):
     
-    soup = BeautifulSoup(text, "html.parser")
+    soup = BeautifulSoup(f'<html><body>{text}</body></html>', "html.parser")
     attachment_tables = soup.find_all("table", class_="message-attachments")
 
     if attachment_tables:
@@ -173,6 +177,6 @@ def get_messages_from_thread(thread_text):
     Takes an HTML snippet (no <html> or <body> tags) and returns a list
     of the text content from all elements with the 'message-content' class.
     """
-    soup = BeautifulSoup(thread_text, 'html.parser')
+    soup = BeautifulSoup(f'<html><body>{thread_text}</body></html>', 'html.parser')
     message_elements = soup.select('.message-content')
     return [element.get_text(strip=True) for element in message_elements]
