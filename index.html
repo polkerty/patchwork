@@ -196,13 +196,7 @@
                     patches = patches.filter(x => x.threads.find(t => t.stats.author.toLowerCase() === STATE.contributor.toLowerCase()))
                     break;
                 case FILTER_ENUM.BEGINNERS:
-                    patches = patches.sort((a, b) => {
-                        if (a.beginnerScore === b.beginnerScore) {
-                            return a.rank < b.rank ? -1 : 1;
-                        }
-                        return a.beginnerScore < b.beginnerScore ? 1 : -1;
-                    
-                    });
+                    patches = patches.filter(x => x.beginnerScore >= 7);
                     break;
 
                 default:

@@ -475,6 +475,9 @@ the ideal patch for a new person is one that's not a deeply bad idea in some way
     flaw in postgres itself, then this is probably not a great fit for a new reviewer, as they might not
     have the best insight into the right fix.
 
+    Also, if we are currently waiting on the author to respond to other feedback, we
+    probably shouldn't assign it to a new reviewer, either.
+
     Now, here is the summary of the thread: 
 
     ```
