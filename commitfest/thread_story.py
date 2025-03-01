@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from pprint import pprint
 from datetime import datetime, timezone
 import re
+import json
 
 PATCH_TOO_LARGE = 'patch_too_large_for_analysis'
 
@@ -442,6 +443,57 @@ def tell_thread_story(thread_id):
 
     return results
 
+def rank_for_beginners(story):
+
+    prompt = f'''
+
+    You are going to evaluate a patch in Postgres to see if it's a good fit for a first-time reviewer.
+
+    To do that, I'm going to give you a summary of the mailing list for the thread. There is one
+    entry per message, in chronological order, and you'll see when the messages were posted,
+    who the author was, a summary of the message, and summary of any patches attached to that message,
+    where we will tell you the number of bytes in the patch and also usually two scores:
+        * complexity, from 1 to 5, where lower is easier to review, and
+        * readiness, from 1 to 3, where lower is less ready to commit and higher is more ready.    
+
+    Here are some overall factors to consider in deciding if a thread would benefit from
+    having a relatively new reviewer look at it:
+
+
+        * who is already involved and how involved are they? if someone has posted 2 detailed reviews in the last week, it's unlikely to be useful for another reviewer to show up ... but if they posted 2 messages and one said "add this to the CommitFest" and the second one further clarified how that works and said they hoped someone had timet to review, that might be interesting. also if somebody was reviewing a year ago and then stopped that's different than if it happened last week.
+
+        * whose feedback would actually be useful? I think this one is probably quite tricky, but it seems to me that once senior people are fairly heavily involved, less experienced people are not likely to be as useful, except in specific circumstances - e.g. the senior people only said "this is far from ready", gave some directional guidance, and left; or if there's a question of desirability. it would actually be great to have some way to get more eyes on patches where there is a question of desirability, where what we need is as much an opinion as a review. but we'd somehow like to segregate patches that need a very senior person to resolve some difficult question from patches that need more normal review.
+the ideal patch for a new person is one that's not a deeply bad idea in some way, not huge, not broken by design, and doesn't already have a complicated status with lots of context where many senior people have already said many interesting things.
+
+
+    Now, here is the summary of the thread: 
+
+    ```
+
+        { 
+
+            '\n * '.join([json.dumps(message) for message in story])
+        }
+    ```
+
+    Please output a score from 0 to 10 indicating how much the thread would benefit from a new reviewer,
+    where 0 = not at all and 10 = great fit, and also a short explanation of your reasoning, as a json in the following
+    format:
+
+    {{
+        "explanation": "text",
+        "score": <1 to 10>,
+
+    }} 
+
+    output no other text so that we can parse your response as a JSON; the first character should be {{ and
+    the last should be }}.
+
+    '''
+
+    result = prompt_gemini(prompt)
+
+    return clean_gemini_json(result)
 
 
 def main():
@@ -449,6 +501,9 @@ def main():
 
     for message in story:
         print(message)
+
+    beginner_rank = rank_for_beginners(story)
+    print(beginner_rank)
 
 if __name__ == '__main__':
     main()

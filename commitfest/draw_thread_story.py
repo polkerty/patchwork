@@ -148,11 +148,23 @@ def create_thread_svg(messages: List[Dict], width=1000, height=400) -> str:
     svg_parts.append('</svg>')
     return "\n".join(svg_parts)
 
+
+def draw_thread(thread, outfile):
+    messages = tell_thread_story(thread)
+
+
+    svg_output = create_thread_svg(messages)
+    # Write to a file or print
+    with open("thread_viz.svg", "w") as f:
+        f.write(svg_output)
+    print("SVG visualization has been written to thread_viz.svg")
+
+
 # ---------------------------
 # Example usage
 if __name__ == "__main__":
     # messages = tell_thread_story('20130926225545.GB26663@awork2.anarazel.de')
-    messages = tell_thread_story('ZlGYokUIlERemvpB@ip-10-97-1-34.eu-west-3.compute.internal')
+    messages = tell_thread_story('TYAPR01MB586654E2D74B838021BE77CAF5EEA@TYAPR01MB5866.jpnprd01.prod.outlook.com')
 
 
     svg_output = create_thread_svg(messages)
