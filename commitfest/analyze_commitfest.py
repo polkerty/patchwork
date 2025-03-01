@@ -52,7 +52,7 @@ def analyze_commitfest(id):
 
     # svgs
     svg_payload =  [(thread, f'../data/svg/{thread}.svg') for thread in stories.keys()]
-    beginners = run_jobs(draw_thread, svg_payload, max_workers=25, payload_arg_key_fn=lambda x: x[0])
+    run_jobs(draw_thread, svg_payload, max_workers=25, payload_arg_key_fn=lambda x: x[0])
 
     
 
