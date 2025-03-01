@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 
 from pprint import pprint
 from datetime import datetime, timezone
+import re
 
 PATCH_TOO_LARGE = 'patch_too_large_for_analysis'
 
@@ -41,7 +42,13 @@ def describe_message(args):
         for pos, description in descriptions.items():
             attachments[pos]['description'] = description
 
-    return (header, body, attachments)
+    return {
+        "key": key,
+        "header": header,
+        "body": body,
+        "attachments": attachments,
+        "contents": contents
+    }
 
 
 # Get author and date
@@ -366,6 +373,55 @@ def parse_diff_stats(diff_text: str):
             "deletions": total_deletions
     }
 
+def trace_thread_references(thread):
+
+    line_source = {}
+
+    for message in thread:
+        text = message['contents']['body']
+        message['references'] = []
+        lines = parse_email_snippet(text)
+
+        for is_quoted, line in lines:
+            if len(line) < 20:
+                continue # ignore short lines
+            if not is_quoted and line not in line_source:
+                line_source[line] = message['key']
+            elif is_quoted and line in line_source:
+                message['references'].append(line_source[line])
+
+        message['references'] = list(set(message['references']))
+
+
+def parse_email_snippet(html_snippet: str) -> list[tuple[bool, str]]:
+    """
+    Parse an HTML snippet from an email, returning a list of (is_quote, line_text) tuples.
+
+    :param html_snippet: The HTML email snippet to parse
+    :return: A list of (is_quote, line_text) tuples
+    """
+    soup = BeautifulSoup(html_snippet, "html.parser")
+    # Use get_text with a separator so <br/> becomes newlines.
+    all_text = soup.get_text("\n")
+
+    lines = []
+    for raw_line in all_text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue  # Skip blank lines if desired.
+
+        # Check if line starts with one or more '>' characters.
+        match = re.match(r"^>+", line)
+        if match:
+            # It's a quote. Remove all leading '>' chars and surrounding spaces.
+            stripped_line = re.sub(r"^>+", "", line).strip()
+            lines.append((True, stripped_line))
+        else:
+            # Not a quote
+            lines.append((False, line))
+
+    return lines
+
 
 def tell_thread_story(thread_id):
     # 1. Load thread text
@@ -377,15 +433,13 @@ def tell_thread_story(thread_id):
 
     messages = run_jobs(describe_message, messages_with_ids, 25, payload_arg_key_fn= lambda x: (x[0]))
 
-    # 2. We'll parse the text ourselves, because we want to do additional analysis
-    # message_elements = soup.select('.message-content')
-    # message_descriptions = [describe_message(message) for message in message_elements]
+    thread = [message for (_, message) in sorted(messages.items(), key= lambda x: x[0][1])]
 
-    # author_and_date = _helper_extract_from_and_date(soup)
+    # now we want to check for messages that reference earlier messages
+    trace_thread_references(thread)
 
-    for pos, message in sorted(messages.items(), key= lambda x: x[0][1]):
-        pprint(message)
-
+    for message in thread:
+        print(message['key'], message['header'], message['body'], message['references'])
 
 
 def main():
