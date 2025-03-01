@@ -465,6 +465,9 @@ def rank_for_beginners(args):
 
         * who is already involved and how involved are they? if someone has posted 2 detailed reviews in the last week, it's unlikely to be useful for another reviewer to show up ... but if they posted 2 messages and one said "add this to the CommitFest" and the second one further clarified how that works and said they hoped someone had timet to review, that might be interesting. also if somebody was reviewing a year ago and then stopped that's different than if it happened last week.
 
+        If there are many messages in the thread and/or some major disagreements, we should probably
+        not recommend it for a new reviewer.
+
         * whose feedback would actually be useful? I think this one is probably quite tricky, but it seems to me that once senior people are fairly heavily involved, less experienced people are not likely to be as useful, except in specific circumstances - e.g. the senior people only said "this is far from ready", gave some directional guidance, and left; or if there's a question of desirability. it would actually be great to have some way to get more eyes on patches where there is a question of desirability, where what we need is as much an opinion as a review. but we'd somehow like to segregate patches that need a very senior person to resolve some difficult question from patches that need more normal review.
 the ideal patch for a new person is one that's not a deeply bad idea in some way, not huge, not broken by design, and doesn't already have a complicated status with lots of context where many senior people have already said many interesting things.
 

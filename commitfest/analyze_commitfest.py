@@ -45,7 +45,7 @@ def analyze_commitfest(id):
     # thread stories
     stories = run_jobs(tell_thread_story, message_ids, max_workers=5)
     beginner_payload = [(thread, story) for thread, story in stories.items()]
-    beginners = run_jobs(rank_for_beginners, beginner_payload, max_workers=5, payload_arg_key_fn=lambda x: x[0])
+    beginners = run_jobs(rank_for_beginners, beginner_payload, max_workers=10, payload_arg_key_fn=lambda x: x[0])
 
     stories_flattened = [message for story in stories.values() for message in story]
     
