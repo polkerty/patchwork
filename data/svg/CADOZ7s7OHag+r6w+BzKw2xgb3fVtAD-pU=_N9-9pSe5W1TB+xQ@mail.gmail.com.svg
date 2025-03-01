@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="400" style="background-color: white; font-family: sans-serif;">
+<line x1="50" y1="200" x2="950" y2="200" stroke="gray" stroke-width="1"/>
+<path d="M 310.96336288681135 200 Q 180.48168144340568 180, 50.0 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 331.3186945872288 200 Q 321.14102873702006 180, 310.96336288681135 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 437.7106978990582 200 Q 384.5146962431435 180, 331.3186945872288 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 712.2018491047711 200 Q 618.6087728981958 180, 525.0156966916204 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 814.1896367337082 200 Q 807.3232828509331 180, 800.4569289681581 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 826.1896367337082 200 Q 820.1896367337082 180, 814.1896367337082 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 838.7722082312761 200 Q 832.4809224824921 180, 826.1896367337082 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 950.0 200 Q 942.5918515196468 180, 935.1837030392934 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 950.0 200 Q 888.094818366854 180, 826.1896367337082 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 950.0 200 Q 894.3861041156381 180, 838.7722082312761 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+
+<defs>
+  <marker id="arrowhead" markerWidth="5" markerHeight="5" 
+          refX="2" refY="2" orient="auto" fill="black">
+    <path d="M0,0 L0,4 L4,2 z" />
+  </marker>
+</defs>
+
+<circle cx="50.0" cy="200" r="6" fill="none" stroke="blue" stroke-width="2" />
+<circle cx="50.0" cy="200" r="3" fill="blue" />
+<circle cx="310.96336288681135" cy="200" r="6" fill="none" stroke="blue" stroke-width="2" />
+<circle cx="310.96336288681135" cy="200" r="3" fill="blue" />
+<circle cx="331.3186945872288" cy="200" r="4" fill="red" />
+<circle cx="437.7106978990582" cy="200" r="6" fill="none" stroke="blue" stroke-width="2" />
+<circle cx="437.7106978990582" cy="200" r="3" fill="blue" />
+<circle cx="525.0156966916204" cy="200" r="4" fill="green" />
+<circle cx="712.2018491047711" cy="200" r="6" fill="none" stroke="blue" stroke-width="2" />
+<circle cx="712.2018491047711" cy="200" r="3" fill="blue" />
+<circle cx="800.4569289681581" cy="200" r="4" fill="green" />
+<circle cx="814.1896367337082" cy="200" r="6" fill="none" stroke="black" stroke-width="2" />
+<circle cx="814.1896367337082" cy="200" r="3" fill="black" />
+<circle cx="826.1896367337082" cy="200" r="4" fill="red" />
+<circle cx="838.7722082312761" cy="200" r="6" fill="none" stroke="blue" stroke-width="2" />
+<circle cx="838.7722082312761" cy="200" r="3" fill="blue" />
+<circle cx="935.1837030392934" cy="200" r="4" fill="blue" />
+<circle cx="950.0" cy="200" r="6" fill="none" stroke="green" stroke-width="2" />
+<circle cx="950.0" cy="200" r="3" fill="green" />
+<text x="50" y="225" fill="gray" style="font-size:12px;">2025-02-22T04:42:04+00:00</text>
+<text x="900" y="225" fill="gray" style="font-size:12px;">2025-02-28T21:44:24+00:00</text>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="400" style="background-color: white; font-family: sans-serif;">
+<line x1="50" y1="200" x2="950" y2="200" stroke="gray" stroke-width="1"/>
+<path d="M 472.7527619459226 200 Q 261.37638097296133 180, 50.0 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 540.546554658167 200 Q 506.6496583020448 180, 472.7527619459226 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 810.2071797088139 200 Q 725.1296966586532 180, 640.0522136084925 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 946.2938602414846 200 Q 878.2505199751492 180, 810.2071797088139 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 958.2938602414846 200 Q 952.2938602414846 180, 946.2938602414846 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+
+<defs>
+  <marker id="arrowhead" markerWidth="5" markerHeight="5" 
+          refX="2" refY="2" orient="auto" fill="black">
+    <path d="M0,0 L0,4 L4,2 z" />
+  </marker>
+</defs>
+
+<circle cx="50.0" cy="200" r="6" fill="none" stroke="blue" stroke-width="2" />
+<circle cx="50.0" cy="200" r="3" fill="blue" />
+<circle cx="62.0" cy="200" r="6" fill="none" stroke="red" stroke-width="2" />
+<circle cx="62.0" cy="200" r="3" fill="red" />
+<circle cx="472.7527619459226" cy="200" r="4" fill="red" />
+<circle cx="540.546554658167" cy="200" r="6" fill="none" stroke="blue" stroke-width="2" />
+<circle cx="540.546554658167" cy="200" r="3" fill="blue" />
+<circle cx="640.0522136084925" cy="200" r="4" fill="red" />
+<circle cx="652.0522136084925" cy="200" r="4" fill="red" />
+<circle cx="810.2071797088139" cy="200" r="6" fill="none" stroke="blue" stroke-width="2" />
+<circle cx="810.2071797088139" cy="200" r="3" fill="blue" />
+<circle cx="946.2938602414846" cy="200" r="4" fill="red" />
+<circle cx="958.2938602414846" cy="200" r="4" fill="red" />
+<text x="50" y="225" fill="gray" style="font-size:12px;">2025-01-15T17:42:23+00:00</text>
+<text x="900" y="225" fill="gray" style="font-size:12px;">2025-02-27T14:04:03+00:00</text>
+</svg>

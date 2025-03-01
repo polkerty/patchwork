@@ -74,7 +74,7 @@ def create_thread_svg(messages: List[Dict], width=1000, height=400) -> str:
     # Build a map from message key -> (index_in_sorted_list, x_position)
     key_to_index = {}
     for i, msg in enumerate(messages_sorted):
-        key_to_index[msg["key"]] = (i, x_positions[i])
+        key_to_index[msg["key"][1]] = (i, x_positions[i])
 
     # Start building the SVG output
     svg_parts = [
@@ -94,7 +94,8 @@ def create_thread_svg(messages: List[Dict], width=1000, height=400) -> str:
         if not msg.get("references"):
             continue
         src_x = x_positions[i]
-        for ref_key in msg["references"]:
+        for refs in msg["references"]:
+            ref_key = refs[1]
             if ref_key in key_to_index:
                 ref_idx, ref_x = key_to_index[ref_key]
                 # We'll draw a simple arrow from the referencing message to the referenced one.
@@ -149,15 +150,21 @@ def create_thread_svg(messages: List[Dict], width=1000, height=400) -> str:
     return "\n".join(svg_parts)
 
 
-def draw_thread(thread, outfile):
+def draw_thread(args):
+    thread, outfile = args
+    print(thread, outfile)
     messages = tell_thread_story(thread)
 
+    print("got story for ", thread)
 
     svg_output = create_thread_svg(messages)
-    # Write to a file or print
-    with open("thread_viz.svg", "w") as f:
+
+    print("got svg ", thread)
+
+    with open(outfile, "w") as f:
         f.write(svg_output)
-    print("SVG visualization has been written to thread_viz.svg")
+
+    print(f"SVG visualization has been written to {outfile}")
 
 
 # ---------------------------
@@ -166,6 +173,8 @@ if __name__ == "__main__":
     # messages = tell_thread_story('20130926225545.GB26663@awork2.anarazel.de')
     messages = tell_thread_story('TYAPR01MB586654E2D74B838021BE77CAF5EEA@TYAPR01MB5866.jpnprd01.prod.outlook.com')
 
+    for m in messages:
+        print(m)
 
     svg_output = create_thread_svg(messages)
     # Write to a file or print

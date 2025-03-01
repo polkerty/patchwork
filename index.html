@@ -649,7 +649,24 @@
 
                         ]
 
-                    }] : [])
+                    }] : []),
+                    {
+                        nodeName: "BR"
+                    },
+                    {
+                        nodeName: "IMG",
+                        attributes: {
+                            src: "data/svg/" + thread.id + ".svg"
+                        },
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: "Last message:"
+                            }
+                        ]
+                    },
+
+
                 ]))
             }]
         }

@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="400" style="background-color: white; font-family: sans-serif;">
+<line x1="50" y1="200" x2="950" y2="200" stroke="gray" stroke-width="1"/>
+<path d="M 144.8631951501656 200 Q 97.4315975750828 180, 50.0 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 457.00551613046923 200 Q 253.50275806523462 180, 50.0 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 469.00551613046923 200 Q 259.5027580652346 180, 50.0 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 505.9803547510741 200 Q 487.4929354407717 180, 469.00551613046923 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 517.9803547510742 200 Q 487.4929354407717 180, 457.00551613046923 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 529.9803547510742 200 Q 289.9901773755371 180, 50.0 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 541.9803547510742 200 Q 505.4929354407717 180, 469.00551613046923 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 541.9803547510742 200 Q 523.9803547510742 180, 505.9803547510741 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 572.7352724960705 200 Q 557.3578136235724 180, 541.9803547510742 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 659.4423858059729 200 Q 616.0888291510216 180, 572.7352724960705 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 671.4423858059729 200 Q 665.4423858059729 180, 659.4423858059729 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 683.4423858059729 200 Q 677.4423858059729 180, 671.4423858059729 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 762.200202030319 200 Q 722.821293918146 180, 683.4423858059729 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 762.200202030319 200 Q 716.821293918146 180, 671.4423858059729 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 774.200202030319 200 Q 768.200202030319 180, 762.200202030319 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 786.200202030319 200 Q 774.200202030319 180, 762.200202030319 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 786.200202030319 200 Q 780.200202030319 180, 774.200202030319 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 798.200202030319 200 Q 780.200202030319 180, 762.200202030319 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 810.200202030319 200 Q 670.0902783906965 180, 529.9803547510742 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 822.200202030319 200 Q 676.0902783906965 180, 529.9803547510742 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 822.200202030319 200 Q 816.200202030319 180, 810.200202030319 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 834.200202030319 200 Q 798.200202030319 180, 762.200202030319 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 834.200202030319 200 Q 804.200202030319 180, 774.200202030319 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 871.7191446553131 200 Q 852.9596733428161 180, 834.200202030319 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 888.4090568902659 200 Q 861.3046294602925 180, 834.200202030319 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 888.4090568902659 200 Q 880.0641007727895 180, 871.7191446553131 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 912.4090568902659 200 Q 900.4090568902659 180, 888.4090568902659 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 924.4090568902659 200 Q 912.4090568902659 180, 900.4090568902659 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 936.4090568902659 200 Q 904.0641007727895 180, 871.7191446553131 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 936.4090568902659 200 Q 912.4090568902659 180, 888.4090568902659 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 948.4090568902659 200 Q 942.4090568902659 180, 936.4090568902659 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 960.4090568902659 200 Q 948.4090568902659 180, 936.4090568902659 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 960.4090568902659 200 Q 954.4090568902659 180, 948.4090568902659 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 972.4090568902659 200 Q 966.4090568902659 180, 960.4090568902659 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 984.4090568902659 200 Q 948.4090568902659 180, 912.4090568902659 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 996.4090568902659 200 Q 984.4090568902659 180, 972.4090568902659 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 1008.4090568902659 200 Q 1002.4090568902659 180, 996.4090568902659 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 1032.409056890266 200 Q 1026.409056890266 180, 1020.4090568902659 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 1044.409056890266 200 Q 1038.409056890266 180, 1032.409056890266 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 1056.409056890266 200 Q 984.4090568902659 180, 912.4090568902659 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 1068.409056890266 200 Q 1062.409056890266 180, 1056.409056890266 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+<path d="M 1080.409056890266 200 Q 1074.409056890266 180, 1068.409056890266 200" stroke="black" fill="none" marker-end="url(#arrowhead)"/>
+
+<defs>
+  <marker id="arrowhead" markerWidth="5" markerHeight="5" 
+          refX="2" refY="2" orient="auto" fill="black">
+    <path d="M0,0 L0,4 L4,2 z" />
+  </marker>
+</defs>
+
+<circle cx="50.0" cy="200" r="6" fill="none" stroke="blue" stroke-width="2" />
+<circle cx="50.0" cy="200" r="3" fill="blue" />
+<circle cx="144.8631951501656" cy="200" r="4" fill="black" />
+<circle cx="457.00551613046923" cy="200" r="4" fill="red" />
+<circle cx="469.00551613046923" cy="200" r="4" fill="red" />
+<circle cx="505.9803547510741" cy="200" r="4" fill="red" />
+<circle cx="517.9803547510742" cy="200" r="6" fill="none" stroke="black" stroke-width="2" />
+<circle cx="517.9803547510742" cy="200" r="3" fill="black" />
+<circle cx="529.9803547510742" cy="200" r="4" fill="red" />
+<circle cx="541.9803547510742" cy="200" r="6" fill="none" stroke="blue" stroke-width="2" />
+<circle cx="541.9803547510742" cy="200" r="3" fill="blue" />
+<circle cx="572.7352724960705" cy="200" r="4" fill="blue" />
+<circle cx="659.4423858059729" cy="200" r="4" fill="blue" />
+<circle cx="671.4423858059729" cy="200" r="6" fill="none" stroke="black" stroke-width="2" />
+<circle cx="671.4423858059729" cy="200" r="3" fill="black" />
+<circle cx="683.4423858059729" cy="200" r="4" fill="green" />
+<circle cx="762.200202030319" cy="200" r="4" fill="red" />
+<circle cx="774.200202030319" cy="200" r="4" fill="red" />
+<circle cx="786.200202030319" cy="200" r="4" fill="black" />
+<circle cx="798.200202030319" cy="200" r="6" fill="none" stroke="blue" stroke-width="2" />
+<circle cx="798.200202030319" cy="200" r="3" fill="blue" />
+<circle cx="810.200202030319" cy="200" r="6" fill="none" stroke="black" stroke-width="2" />
+<circle cx="810.200202030319" cy="200" r="3" fill="black" />
+<circle cx="822.200202030319" cy="200" r="4" fill="black" />
+<circle cx="834.200202030319" cy="200" r="4" fill="blue" />
+<circle cx="871.7191446553131" cy="200" r="4" fill="red" />
+<circle cx="888.4090568902659" cy="200" r="4" fill="blue" />
+<circle cx="900.4090568902659" cy="200" r="4" fill="black" />
+<circle cx="912.4090568902659" cy="200" r="4" fill="blue" />
+<circle cx="924.4090568902659" cy="200" r="4" fill="black" />
+<circle cx="936.4090568902659" cy="200" r="4" fill="black" />
+<circle cx="948.4090568902659" cy="200" r="4" fill="black" />
+<circle cx="960.4090568902659" cy="200" r="4" fill="black" />
+<circle cx="972.4090568902659" cy="200" r="4" fill="black" />
+<circle cx="984.4090568902659" cy="200" r="4" fill="red" />
+<circle cx="996.4090568902659" cy="200" r="4" fill="black" />
+<circle cx="1008.4090568902659" cy="200" r="4" fill="black" />
+<circle cx="1020.4090568902659" cy="200" r="4" fill="black" />
+<circle cx="1032.409056890266" cy="200" r="4" fill="black" />
+<circle cx="1044.409056890266" cy="200" r="4" fill="black" />
+<circle cx="1056.409056890266" cy="200" r="4" fill="black" />
+<circle cx="1068.409056890266" cy="200" r="4" fill="black" />
+<circle cx="1080.409056890266" cy="200" r="4" fill="black" />
+<text x="50" y="225" fill="gray" style="font-size:12px;">2025-01-02T20:46:04+00:00</text>
+<text x="900" y="225" fill="gray" style="font-size:12px;">2025-02-13T16:44:33+00:00</text>
+</svg>
