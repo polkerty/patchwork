@@ -134,6 +134,7 @@
                 patch.fileSimilarityRank = rankings[patch.patch_id]?.rank ?? patches.length;
                 patch.commitfest = { ...STATE.patchById[patch.patch_id] };
                 patch.threads = STATE.threadsOfPatch[patch.patch_id].map(thread => STATE.byThread[thread]);
+                patch.beginnerScore = Math.min.apply(null, patch.threads.map(thread => thread.beginners.score));
 
                 patch.constructedRank = (() => {
                     best = patch.fileSimilarityRank;
@@ -246,7 +247,7 @@
                         sort: "asc"
                     },
                     {
-                        select: 4,
+                        select: 5,
                         render: renderThreads,
                     }
 
@@ -268,6 +269,10 @@
                         {
                             text: "Rank for you",
                             data: "rank",
+                        },
+                        {
+                            text: "How suitable for a new reviewer? (0 = Not suitable, 10 = Suitable)",
+                            data: "beginnerScore",
                         },
                         {
                             text: "Threads",
@@ -647,6 +652,11 @@
                 byThread[thread.thread].predictedCommitters = thread;
             }
 
+            for ( const thread of DATA.beginners ) {
+                byThread[thread.thread].beginners = thread;
+            }
+
+
             const byContributor = {};
             for ( const contributor of DATA.contributors ) {
                 byContributor[contributor.name] = contributor;
@@ -672,6 +682,7 @@
                 patchMessage,
                 predictedCommitters,
                 contributors,
+                beginners,
             ] = await Promise.all([
                 'thread_summaries.json',
                 'contrib_tf_idf.json',
@@ -679,7 +690,8 @@
                 'thread_stats.json',
                 'patch_message.json',
                 'predicted_committers.json',
-                'contributors.json'
+                'contributors.json',
+                'beginners.json',
             ].map(url => fetch(dataBaseURL + url).then(x => x.json())))
 
             Object.assign(DATA, {
@@ -689,7 +701,8 @@
                 threadStats,
                 patchMessage,
                 predictedCommitters,
-                contributors
+                contributors,
+                beginners,
             });
 
             Object.assign(STATE, constructLookups());

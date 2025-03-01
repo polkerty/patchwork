@@ -48,3 +48,9 @@ psql -p 6565 -c "\
   SELECT json_agg(row_to_json(t)) \
   FROM (SELECT * FROM contributors) t;" \
   -t -A > ../data/contributors.json
+
+# beginners: how hard for a beginner? 
+psql -p 6565 -c "\
+  SELECT json_agg(row_to_json(t)) \
+  FROM (SELECT * FROM beginners) t;" \
+  -t -A > ../data/beginners.json
