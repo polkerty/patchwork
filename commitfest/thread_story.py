@@ -468,6 +468,9 @@ def rank_for_beginners(args):
         * whose feedback would actually be useful? I think this one is probably quite tricky, but it seems to me that once senior people are fairly heavily involved, less experienced people are not likely to be as useful, except in specific circumstances - e.g. the senior people only said "this is far from ready", gave some directional guidance, and left; or if there's a question of desirability. it would actually be great to have some way to get more eyes on patches where there is a question of desirability, where what we need is as much an opinion as a review. but we'd somehow like to segregate patches that need a very senior person to resolve some difficult question from patches that need more normal review.
 the ideal patch for a new person is one that's not a deeply bad idea in some way, not huge, not broken by design, and doesn't already have a complicated status with lots of context where many senior people have already said many interesting things.
 
+    Just to double down on this, even if the patch itself is short, if the topic is some tricky bugfix or
+    flaw in postgres itself, then this is probably not a great fit for a new reviewer, as they might not
+    have the best insight into the right fix.
 
     Now, here is the summary of the thread: 
 
