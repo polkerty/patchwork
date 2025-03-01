@@ -39,7 +39,7 @@
             files changed to the ones you've changed historically to create a custom ranking of relevant patches
             for anyone who's committed to Postgres in the past, or been credited with an <code>Author:</code> line in
             the commit message. If you are a committer, we also do a regression analysis of topics you've committed
-            in the past to help recommend patches you might want to commit. 
+            in the past to help recommend patches you might want to commit.
             <a href="https://github.com/polkerty/patchwork" target="_blank">Repository</a> | <a
                 href="mailto:jacob.brazeal@gmail.com">Contact</a> |
             <span id="last-updated"></span> Name matching between mailing lists, git repo, and commitfest is approximate
@@ -70,7 +70,8 @@
             "RECOMMENDED": "Recommended patches for you to check",
             "ALL": "All patches",
             "MY_REVIEWS": "My mailing threads",
-            "MY_PATCHES": "Patches I wrote"
+            "MY_PATCHES": "Patches I wrote",
+            "BEGINNERS": "Patches for a beginner to review"
         }
 
         function displayName(name) {
@@ -194,6 +195,15 @@
                 case FILTER_ENUM.MY_PATCHES:
                     patches = patches.filter(x => x.threads.find(t => t.stats.author.toLowerCase() === STATE.contributor.toLowerCase()))
                     break;
+                case FILTER_ENUM.BEGINNERS:
+                    patches = patches.sort((a, b) => {
+                        if (a.beginnerScore === b.beginnerScore) {
+                            return a.rank < b.rank ? -1 : 1;
+                        }
+                        return a.beginnerScore < b.beginnerScore ? 1 : -1;
+                    
+                    });
+                    break;
 
                 default:
                     break;
@@ -244,7 +254,7 @@
                     {
                         // relevancy ...
                         select: 3,
-                        sort: "asc"
+                        ...(STATE.filter = FILTER_ENUM.BEGINNERS ? {} : { sort: "asc" })
                     },
                     {
                         select: 5,
@@ -403,8 +413,8 @@
                         childNodes: [
                             {
                                 nodeName: "#text",
-                                data: displayName(thread.predictedCommitters.a) + " / " + 
-                                    displayName(thread.predictedCommitters.b) + " / " + 
+                                data: displayName(thread.predictedCommitters.a) + " / " +
+                                    displayName(thread.predictedCommitters.b) + " / " +
                                     displayName(thread.predictedCommitters.c)
                             }
                         ]
@@ -652,13 +662,13 @@
                 byThread[thread.thread].predictedCommitters = thread;
             }
 
-            for ( const thread of DATA.beginners ) {
+            for (const thread of DATA.beginners) {
                 byThread[thread.thread].beginners = thread;
             }
 
 
             const byContributor = {};
-            for ( const contributor of DATA.contributors ) {
+            for (const contributor of DATA.contributors) {
                 byContributor[contributor.name] = contributor;
             }
 
