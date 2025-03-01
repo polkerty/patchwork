@@ -5,9 +5,13 @@ from llm import prompt_gemini, clean_gemini_json
 from cache import cache_results
 from worker import run_jobs
 
+import requests
 from bs4 import BeautifulSoup
+
 from pprint import pprint
 from datetime import datetime, timezone
+
+PATCH_TOO_LARGE = 'patch_too_large_for_analysis'
 
 '''
 1. Author
@@ -27,9 +31,15 @@ def describe_message(args):
     body = describe_body(key, contents['body'])
 
     if 'attachments' in contents:
-        attachments = describe_attachments(contents['attachments'])
+        attachments = list_attachments(contents['attachments'])
     else:
         attachments = None
+
+    if attachments:
+        with_position = [(pos, attachment) for (pos, attachment) in enumerate(attachments)]
+        descriptions = run_jobs(describe_attachment, with_position, 5, payload_arg_key_fn=lambda x: x[0])
+        for pos, description in descriptions.items():
+            attachments[pos]['description'] = description
 
     return (header, body, attachments)
 
@@ -166,7 +176,7 @@ def parse_size_to_bytes(size_str):
     return int(value * multiplier)
 
 
-def describe_attachments(html_snippet):
+def list_attachments(html_snippet):
     """
     Parse the HTML snippet for the attachments table,
     returning a list of attachments with fields:
@@ -175,6 +185,7 @@ def describe_attachments(html_snippet):
     Only returns attachments with content-type text/x-patch.
     Converts the human-readable size to an integer (bytes).
     """
+    base_url = 'https://postgresql.org'
     soup = BeautifulSoup(html_snippet, "html.parser")
     attachments_table = soup.find("table", class_="message-attachments")
     if not attachments_table:
@@ -209,13 +220,69 @@ def describe_attachments(html_snippet):
         
         attachments.append({
             "name": name,
-            "url": url,
+            "url": base_url + url,
             "size": size_bytes,
             "contentType": content_type
         })
     
     return attachments
 
+
+def describe_attachment(args):
+    key, properties = args
+
+    # 1. fetch the attachment
+    contents = requests.get(properties["url"]).text
+
+    ret = {
+        "stats": parse_diff_stats(contents),
+    }
+
+    if len(contents) < 50000:
+        prompt = f'''
+            You are reading a Git patch diff to Postgres. We would like you to decide the following things about it:
+
+            1. How complex is this change? Respond on a scale of 1 to 5, where
+                * 1 is a small, non-functional change, like editing a typo in a comment
+                * 2 is minor functional change, perhaps adding a small bit of functionality,
+                    but with a low risk of breaking anything.
+                * 3 is a medium-size change, perhaps changing some existing functionality 
+                * 4 is a substantial change, touching many files and/or changing critical parts
+                    of the codebase in ways that are tricky to reason about.
+                * 5 is at the far end of complexity - something truly complex and ambitious
+                    that would be very difficult to test and review. 
+
+            2. In your judgement, what level of readiness is this patch for review? (1 - 3)
+                * 1: The patch is in a preliminary, WIP condition, definitely not ready for 
+                    a full review. Look for comments indicating TODOs, WIPs,
+                    and so on, for example.
+                * 2: The patch is ready for review, but there may be some rough edges. 
+                * 3: The patch looks polished, well-commented, and looks read to commit to 
+                    the codebase.
+
+            Here is the contents of the git patch: 
+            ```
+            { 
+                contents
+            }
+            ```
+            Please output your verdict as a JSON with no other commentary so we can parse it cleanly. Your first character should be a 
+            {{ and your last, also a }}. The format should be:
+
+            {{
+                "complexity": <1 to 5>,
+                "readiness": <1 to 3>
+            }}
+
+        '''
+        
+        result = prompt_gemini(prompt)
+
+        cleaned_result = clean_gemini_json(result)
+
+        ret["analysis"] = cleaned_result
+
+    return ret
 
 
 
@@ -268,6 +335,36 @@ def parse_messages(soup):
         messages.append(current_message)
     
     return messages
+
+
+def parse_diff_stats(diff_text: str):
+    """
+    Parse a git diff/patch file and return:
+      - total number of files changed
+      - total lines added
+      - total lines deleted
+    """
+
+    file_count = 0
+    total_additions = 0
+    total_deletions = 0
+
+    for line in diff_text.splitlines():
+        # Each file change typically starts with 'diff --git a/... b/...'
+        if line.startswith("diff --git"):
+            file_count += 1
+        
+        # Count additions and deletions
+        elif line.startswith("+") and not line.startswith("+++"):
+            total_additions += 1
+        elif line.startswith("-") and not line.startswith("---"):
+            total_deletions += 1
+
+    return {
+            "files": file_count, 
+            "additions": total_additions,
+            "deletions": total_deletions
+    }
 
 
 def tell_thread_story(thread_id):
