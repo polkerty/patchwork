@@ -66,6 +66,8 @@
         const DATA = {};
         const STATE = {};
 
+        const BEGINNER_THRESHOLD = 7;
+
         const FILTER_ENUM = {
             "RECOMMENDED": "Recommended patches for you to check",
             "ALL": "All patches",
@@ -196,7 +198,7 @@
                     patches = patches.filter(x => x.threads.find(t => t.stats.author.toLowerCase() === STATE.contributor.toLowerCase()))
                     break;
                 case FILTER_ENUM.BEGINNERS:
-                    patches = patches.filter(x => x.beginnerScore >= 7);
+                    patches = patches.filter(x => x.beginnerScore >= BEGINNER_THRESHOLD);
                     break;
 
                 default:
@@ -251,6 +253,10 @@
                         ...(STATE.filter = FILTER_ENUM.BEGINNERS ? {} : { sort: "asc" })
                     },
                     {
+                        select: 4,
+                        render: renderBeginnerScore,
+                    },
+                    {
                         select: 5,
                         render: renderThreads,
                     }
@@ -275,7 +281,7 @@
                             data: "rank",
                         },
                         {
-                            text: "How suitable for a new reviewer? (0 = Not suitable, 10 = Suitable)",
+                            text: "Suitable for a new reviewer?",
                             data: "beginnerScore",
                         },
                         {
@@ -323,6 +329,19 @@
                     ]
                 }
             ]
+        }
+
+        const renderBeginnerScore = function (data, cell, dataIndex, cellIndex) {
+            console.log(data);
+            const score = Number(data[0].data);
+            const value = score >= BEGINNER_THRESHOLD ? 'Yes' : 'No';
+            cell.childNodes = [
+                {
+                    nodeName: "#text",
+                    data: value
+                }
+            ]
+
         }
 
         const renderThreads = function (data, cell, dataIndex, cellIndex) {
@@ -605,7 +624,32 @@
 
                         ]
 
-                    }
+                    },
+                    ...(thread.beginners.score >= BEGINNER_THRESHOLD ? [{
+                        nodeName: "BR"
+                    },
+                    {
+                        nodeName: "STRONG",
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: "For beginners: "
+                            }
+
+                        ]
+
+                    },
+                    {
+                        nodeName: "SPAN",
+                        childNodes: [
+                            {
+                                nodeName: "#text",
+                                data: thread.beginners.explanation
+                            }
+
+                        ]
+
+                    }] : [])
                 ]))
             }]
         }
