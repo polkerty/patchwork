@@ -422,7 +422,7 @@ def parse_email_snippet(html_snippet: str) -> list[tuple[bool, str]]:
 
     return lines
 
-
+@cache_results()
 def tell_thread_story(thread_id):
     # 1. Load thread text
     text = fetch_thread(thread_id)
@@ -438,12 +438,17 @@ def tell_thread_story(thread_id):
     # now we want to check for messages that reference earlier messages
     trace_thread_references(thread)
 
-    for message in thread:
-        print(message['key'], message['header'], message['body'], message['references'])
+    results = [{key: value for key, value in message.items() if key not in ("contents",)} for message in thread ]
+
+    return results
+
 
 
 def main():
-    tell_thread_story('20130926225545.GB26663@awork2.anarazel.de')
+    story = tell_thread_story('20130926225545.GB26663@awork2.anarazel.de')
+
+    for message in story:
+        print(message)
 
 if __name__ == '__main__':
     main()
