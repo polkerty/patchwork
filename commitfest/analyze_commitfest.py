@@ -2,6 +2,7 @@
 from scrape import parse_commitfest_page, get_patch_info
 from analyze_thread import analyze_thread
 from predict_committers import predict_committers
+from thread_story import tell_thread_story, rank_for_beginners
 from attachments import analyze_attachment
 from worker import run_jobs
 from write_csv import dict_to_csv, array_of_dict_to_csv
@@ -41,6 +42,12 @@ def analyze_commitfest(id):
 
     print(attachment_stats_flattened)
 
+    # thread stories
+    stories = run_jobs(tell_thread_story, message_ids, max_workers=5)
+    beginner_payload = [(thread, story) for thread, story in stories.items()]
+    beginners = run_jobs(rank_for_beginners, beginner_payload, max_workers=5, payload_arg_key_fn=lambda x: x[0])
+
+    stories_flattened = [message for story in stories.values() for message in story]
     
 
     dict_to_csv(patch_info, "patches.csv")
@@ -50,6 +57,8 @@ def analyze_commitfest(id):
     dict_to_csv(attachment_stats_flattened, "attachment_stats.csv")
     dict_to_csv(message_of_patch, "message_patch.csv")
     dict_to_csv(predicted_committers, "predicted_committers.csv")
+    array_of_dict_to_csv(stories_flattened, "stories.csv")
+    dict_to_csv(beginners, "beginners.csv")
     array_of_dict_to_csv(csv_of_contributor_names, "contributor_names.csv")
 
 

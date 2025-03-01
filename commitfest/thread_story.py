@@ -432,7 +432,7 @@ def tell_thread_story(thread_id):
     message_components = parse_messages(soup)
     messages_with_ids = [ ((thread_id, index), components) for index, components in enumerate(message_components)  ]
 
-    messages = run_jobs(describe_message, messages_with_ids, 25, payload_arg_key_fn= lambda x: (x[0]))
+    messages = run_jobs(describe_message, messages_with_ids, 10, payload_arg_key_fn= lambda x: (x[0]))
 
     thread = [message for (_, message) in sorted(messages.items(), key= lambda x: x[0][1])]
 
@@ -443,7 +443,10 @@ def tell_thread_story(thread_id):
 
     return results
 
-def rank_for_beginners(story):
+@cache_results(0, 0)
+def rank_for_beginners(args):
+
+    thread, story = args
 
     prompt = f'''
 
@@ -497,12 +500,13 @@ the ideal patch for a new person is one that's not a deeply bad idea in some way
 
 
 def main():
-    story = tell_thread_story('20130926225545.GB26663@awork2.anarazel.de')
+    thread = '20130926225545.GB26663@awork2.anarazel.de'
+    story = tell_thread_story(thread)
 
     for message in story:
         print(message)
 
-    beginner_rank = rank_for_beginners(story)
+    beginner_rank = rank_for_beginners(thread, story)
     print(beginner_rank)
 
 if __name__ == '__main__':

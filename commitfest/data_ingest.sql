@@ -96,4 +96,16 @@ create or replace view contributors as
     from contributor_names
 ;
 
+DROP TABLE IF EXISTS beginners cascade;
+
+CREATE TABLE beginners (
+    thread text primary key,
+    explanation text,
+    score integer
+);
+
+\copy beginners from 'beginners.csv' DELIMITER ',' CSV HEADER;
+
+
+
 COMMIT;
