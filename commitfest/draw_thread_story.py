@@ -36,7 +36,7 @@ def avoid_overlap(x_positions, min_sep=10):
             # Push the point to the right just enough
             x_positions[i] = x_positions[i-1] + min_sep
 
-def create_thread_svg(messages: List[Dict], width=1000, height=400) -> str:
+def create_thread_svg(messages: List[Dict], width=1000, height=200) -> str:
     """
     Create an SVG string that shows each message as a dot on a timeline,
     with arrows drawn for references.
