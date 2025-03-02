@@ -1,793 +1,454 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Experimental commitfest patch ranker</title>
-    <script src="https://code.jquery.com/jquery-3.7.1.slim.js"
-        integrity="sha256-UgvvN8vBkgO0luPSUl2s8TIlOSYRoGFAX4jlCIm9Adc=" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
-    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
-    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
-    <!-- <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet"> -->
-    <style>
-        body,
-        table {
-            /* font-family: "Atkinson Hyperlegible Mono", serif;
-            font-size: smaller; */
-        }
-    </style>
-    <script>
-        window.va = function () {
-            (window.vaq = window.vaq || []).push(arguments);
-        };
-        window.va('beforeSend', (event) => {
-            if (event.url.includes('/private')) {
-                return null;
-            }
-            return event;
-        });
-    </script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Commitfest Patch Ranker (Experimental) – 03/2025</title>
+  <!-- Google Font for a modern look -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <!-- External libraries -->
+  <script src="https://code.jquery.com/jquery-3.7.1.slim.js"
+          integrity="sha256-UgvvN8vBkgO0luPSUl2s8TIlOSYRoGFAX4jlCIm9Adc=" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+  <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+  <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+  <style>
+    /* Global Reset & Typography */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f7f9fc;
+      color: #333;
+      line-height: 1.6;
+      padding: 20px;
+    }
+    /* Main container styling */
+    #main {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+    header p {
+      font-size: 1rem;
+      color: #555;
+    }
+    header p a {
+      color: #3498db;
+      text-decoration: none;
+    }
+    header p a:hover {
+      text-decoration: underline;
+    }
+    /* Controls styling */
+    #controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 10px;
+    }
+    #controls select {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    #controls a,
+    #controls strong {
+      margin: 0 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #333;
+    }
+    #controls a:hover {
+      color: #3498db;
+    }
+    /* Content and Table sections */
+    #content {
+      margin: 20px 0;
+    }
+    #table {
+      overflow-x: auto;
+    }
+    /* Footer styling */
+    footer {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #888;
+      margin-top: 20px;
+    }
+  </style>
+  <script>
+    // Vercel Insights snippet (for analytics)
+    window.va = function () {
+      (window.vaq = window.vaq || []).push(arguments);
+    };
+    window.va('beforeSend', (event) => {
+      if (event.url.includes('/private')) {
+        return null;
+      }
+      return event;
+    });
+  </script>
 </head>
-
 <body>
+  <div id="main">
+    <header>
+      <h1>03/2025 Commitfest Patch Ranker (Experimental)</h1>
+      <p>
+        How it works: An LLM reads through mailing list threads to determine patch statuses and cross-references file changes against your history. It ranks patches based on whether you’ve committed in the past or been noted as an <code>Author:</code> in commit messages.
+        <br>
+        <a href="https://github.com/polkerty/patchwork" target="_blank">Repository</a> |
+        <a href="mailto:jacob.brazeal@gmail.com">Contact</a> |
+        <span id="last-updated"></span>
+      </p>
+    </header>
+    <!-- Controls: contributor selector and filter options -->
+    <section id="controls">
+      <div id="contributor-select"></div>
+      <div id="filter-options"></div>
+    </section>
+    <!-- Main content area -->
+    <section id="content">
+      <h2>Please select your name to see your personalized patch review recommendations</h2>
+    </section>
+    <!-- Table container for patch data -->
+    <section id="table">
+      <div id="table_inner"></div>
+    </section>
+    <footer>
+      &copy; 2025 Commitfest Patch Ranker
+    </footer>
+  </div>
+  <script>
+    // DATA and STATE objects store the fetched data and computed lookups.
+    const DATA = {};
+    const STATE = {};
+    const BEGINNER_THRESHOLD = 7;
+    const FILTER_ENUM = {
+      "RECOMMENDED": "Recommended patches for you to check",
+      "ALL": "All patches",
+      "MY_REVIEWS": "My mailing threads",
+      "MY_PATCHES": "Patches I wrote",
+      "BEGINNERS": "Patches for a beginner to review"
+    };
 
-    <div id="main">
-        <h1>03/2025 Commitfest patch ranker (experimental)</h1>
-        <p>How it works: LLM reads through mailing list threads to figure out the status, and we cross-reference the
-            files changed to the ones you've changed historically to create a custom ranking of relevant patches
-            for anyone who's committed to Postgres in the past, or been credited with an <code>Author:</code> line in
-            the commit message. If you are a committer, we also do a regression analysis of topics you've committed
-            in the past to help recommend patches you might want to commit.
-            <a href="https://github.com/polkerty/patchwork" target="_blank">Repository</a> | <a
-                href="mailto:jacob.brazeal@gmail.com">Contact</a> |
-            <span id="last-updated"></span> Name matching between mailing lists, git repo, and commitfest is approximate
-            and can break (especially
-            when people have multiple handles.)
-        </p>
-        <div id="controls">
-            <h2>Loading...</h2>
-        </div>
-        <div id="content">
-        </div>
-        <div id="table">
-            <div id="table_inner">
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <script defer>
-
-        const DATA = {};
-        const STATE = {};
-
-        const BEGINNER_THRESHOLD = 7;
-
-        const FILTER_ENUM = {
-            "RECOMMENDED": "Recommended patches for you to check",
-            "ALL": "All patches",
-            "MY_REVIEWS": "My mailing threads",
-            "MY_PATCHES": "Patches I wrote",
-            "BEGINNERS": "Patches for a beginner to review"
+    // Utility function to display a contributor's name.
+    function displayName(name) {
+      return STATE.byContributor[name]?.display_name || name;
+    }
+    // Handler for when a contributor is selected.
+    function setContributor(event) {
+      const contributor = event.target.value || undefined;
+      STATE.contributor = contributor;
+      renderContent();
+    }
+    // Render the contributor dropdown and filter options.
+    function renderControls() {
+      let contributorHTML = `
+        <select onchange="setContributor(event)">
+          <option value="" ${!STATE.contributor ? 'selected' : ''}>Select your name...</option>
+          ${STATE.contributors.map(c => `<option value="${c}" ${STATE.contributor === c ? 'selected' : ''}>${displayName(c)}</option>`).join('')}
+        </select>
+      `;
+      let filterHTML = `<strong style="margin-right: 10px;">Filter:</strong>`;
+      for (const [key, label] of Object.entries(FILTER_ENUM)) {
+        if (STATE.filter === label) {
+          filterHTML += `<strong>${label}</strong>`;
+        } else {
+          filterHTML += `<a onclick='setFilter("${label}")'>${label}</a>`;
         }
-
-        function displayName(name) {
-            return STATE.byContributor[name]?.display_name ?? name;
-        }
-
-        function setContributor(event) {
-            const contributor = event.target.value?.length > 0 ? event.target.value : undefined;
-            STATE.contributor = contributor;
-            renderContent();
-        }
-
-        function renderControls() {
-            let html = '';
-
-            html += `
-                    <select onChange="setContributor(event)"  >
-                        <option value="" ${(STATE.contributor ?? "") === "" ? 'selected' : ''} >Select your name...</option>
-                        ${STATE.contributors.map(c => `<option value="${c}" ${(STATE.contributor ?? "") === c ? 'selected' : ''} >${displayName(c)}</option>`)}
-                    </select>
-                    `;
-
-            html += "<strong style='margin: 0 10px;'>Filter:</strong>";
-
-            for (const [filter, name] of Object.entries(FILTER_ENUM)) {
-                if (STATE.filter === name) {
-                    html += "<strong>" + name + '</strong>';
-                } else {
-                    html += `<a href='javascript:void(0)' onClick='setFilter("${name}")' >${name}</a>`
-                }
-                html += `<span style="margin: 0 5px;" >|</span>`;
+        filterHTML += `<span style="margin: 0 5px;">|</span>`;
+      }
+      $('#contributor-select').html(contributorHTML);
+      $('#filter-options').html(filterHTML);
+    }
+    // Set a new filter and re-render.
+    function setFilter(filter) {
+      STATE.filter = filter;
+      render();
+    }
+    // Prepare patch data based on the current contributor and filter.
+    function getPatchData() {
+      let patches = DATA.patches.map(x => ({ ...x }));
+      const rankings = Object.fromEntries(
+        DATA.rankings.filter(x => x.reviewer === STATE.contributor)
+                     .map(x => [x.patch, { ...x }])
+      );
+      for (const patch of patches) {
+        patch.rankData = rankings[patch.patch_id];
+        patch.fileSimilarityRank = rankings[patch.patch_id]?.rank || patches.length;
+        patch.commitfest = { ...STATE.patchById[patch.patch_id] };
+        patch.threads = STATE.threadsOfPatch[patch.patch_id].map(thread => STATE.byThread[thread]);
+        patch.beginnerScore = Math.min(...patch.threads.map(thread => thread.beginners.score));
+        patch.constructedRank = (function() {
+          let best = patch.fileSimilarityRank;
+          for (const thread of patch.threads) {
+            if (thread.predictedCommitters.a === STATE.contributor) {
+              let score = -3000 - (100 * thread.predictedCommitters.score_a);
+              if (score < best) {
+                best = score;
+                patch.selfCommitReasons = thread.predictedCommitters.terms_a;
+              }
+            } else if (thread.predictedCommitters.b === STATE.contributor) {
+              let score = -2000 - (100 * thread.predictedCommitters.score_b);
+              if (score < best) {
+                best = score;
+                patch.selfCommitReasons = thread.predictedCommitters.terms_b;
+              }
+            } else if (thread.predictedCommitters.c === STATE.contributor) {
+              let score = -1000 - (100 * thread.predictedCommitters.score_c);
+              if (score < best) {
+                best = score;
+                patch.selfCommitReasons = thread.predictedCommitters.terms_c;
+              }
             }
-
-
-            $('#controls').html(html);
-        }
-
-        function setFilter(filter) {
-            STATE.filter = filter;
-            render();
-        }
-
-        function getPatchData() {
-            // Prepare a list of patches for the currently-selected contributor, 
-            // ranked according to their best match.
-
-            // 1. get all patches
-            let patches = DATA.patches.map(x => ({ ...x }));
-
-            const rankings =
-                Object.fromEntries(
-                    DATA.rankings.
-                        filter(x => x.reviewer === STATE.contributor).
-                        map(x => ({ ...x })).
-                        map(x => [x.patch, x])
-                );
-
-            // 2. decorate
-            for (const patch of patches) {
-                patch.rankData = rankings[patch.patch_id];
-                patch.fileSimilarityRank = rankings[patch.patch_id]?.rank ?? patches.length;
-                patch.commitfest = { ...STATE.patchById[patch.patch_id] };
-                patch.threads = STATE.threadsOfPatch[patch.patch_id].map(thread => STATE.byThread[thread]);
-                patch.beginnerScore = Math.min.apply(null, patch.threads.map(thread => thread.beginners.score));
-
-                patch.constructedRank = (() => {
-                    best = patch.fileSimilarityRank;
-                    for (const thread of patch.threads) {
-                        if (thread.predictedCommitters.a === STATE.contributor) {
-                            const score = -3000 - (100 * thread.predictedCommitters.score_a);
-                            if (score < best) {
-                                best = score;
-                                patch.selfCommitReasons = thread.predictedCommitters.terms_a;
-                            }
-                        }
-                        else if (thread.predictedCommitters.b === STATE.contributor) {
-                            const score = -2000 - (100 * thread.predictedCommitters.score_b);
-                            if (score < best) {
-                                best = score;
-                                patch.selfCommitReasons = thread.predictedCommitters.terms_b;
-                            }
-                        }
-                        else if (thread.predictedCommitters.c === STATE.contributor) {
-                            const score = -1000 - (100 * thread.predictedCommitters.score_c);
-                            if (score < best) {
-                                best = score;
-                                patch.selfCommitReasons = thread.predictedCommitters.terms_c;
-                            }
-                        }
-                    }
-                    return best;
-                })();
-
-                // hoisting some thread data up for each of use in the table
-                patch.newReviewer = patch.threads.map(t => t.would_benefit_from_new_reviewer).filter(v => v === 'YES').length > 0
-                    ? 'Yes'
-                    : 'No';
-
-                // dummy IDs to work around table not allowing multiple references to the same column
-                // never mind, this is a nightmare, i'll have to redo it in react. wtf.
-                patch.patch_id_2 = patch.patch_id;
-                patch.patch_id_3 = patch.patch_id;
-            }
-
-            patches = patches.sort((a, b) => a.constructedRank < b.constructedRank ? -1 : 1);
-            for (let i = 0; i < patches.length; ++i) {
-                patches[i].rank = i + 1;
-            }
-
-            // 3. filter according to filter rules 
-            switch (STATE.filter) {
-                case FILTER_ENUM.ALL:
-                    // nothing to filter
-                    break;
-                case FILTER_ENUM.RECOMMENDED:
-                    patches = patches.filter(patch => patch.newReviewer === 'Yes');
-                    break;
-                case FILTER_ENUM.MY_REVIEWS:
-                    patches = patches.filter(x => x.threads.find(t => t.stats.reviewer_list.find(r => r.toLowerCase() === STATE.contributor.toLowerCase())));
-                    break;
-                case FILTER_ENUM.MY_PATCHES:
-                    patches = patches.filter(x => x.threads.find(t => t.stats.author.toLowerCase() === STATE.contributor.toLowerCase()))
-                    break;
-                case FILTER_ENUM.BEGINNERS:
-                    patches = patches.filter(x => x.beginnerScore >= BEGINNER_THRESHOLD);
-                    break;
-
-                default:
-                    break;
-            }
-
-            return patches;
-        }
-
-        function renderContent() {
-            let html = '';
-
-            if (!STATE.contributor) {
-                html = '<h2>Please select your name to see your personalized patch review recommendations</h2>';
-                $("#content").html(html);
-                $("#table").html("");
-                return;
-            }
-
-            // Patch list
-            const patchData = getPatchData();
-
-            // for testing
-            console.log(patchData);
-            console.log(patchData[0]);
-
-            STATE.table = patchData;
-
-            $('#table').html("<div id='table_inner' ></div>"); // reset to appease table library
-
-            let dataTable = new window.simpleDatatables.DataTable('#table_inner', {
-                searchable: true,
-                fixedHeight: true,
-                columns: [
-                    {
-                        select: 0,
-                    },
-                    {
-                        select: 1,
-                        render: renderNameLink,
-                        searchMethod: (terms, cell, row, _column, source) => {
-                            if (!terms.length) return true;
-                            // this is painful but we have to work backwards again to get the name
-                            const entry = STATE.patchById[cell.data[0].data]; // forgive me, it's a demo
-                            const lower_case = entry.name.toLowerCase();
-                            return terms.filter(term => lower_case.includes(term.toLowerCase())).length === terms.length;
-                        }
-                    },
-                    {
-                        // relevancy ...
-                        select: 3,
-                        ...(STATE.filter = FILTER_ENUM.BEGINNERS ? {} : { sort: "asc" })
-                    },
-                    {
-                        select: 4,
-                        render: renderBeginnerScore,
-                    },
-                    {
-                        select: 5,
-                        render: renderThreads,
-                    }
-
-                ],
-                data: {
-                    headings: [
-                        {
-                            text: "ID",
-                            data: "patch_id"
-                        },
-                        {
-                            text: "Name",
-                            data: 'patch_id_2',
-                        },
-                        {
-                            text: "[LLM] Would benefit from a net-new reviewer?",
-                            data: "newReviewer"
-                        },
-                        {
-                            text: "Rank for you",
-                            data: "rank",
-                        },
-                        {
-                            text: "Suitable for a new reviewer?",
-                            data: "beginnerScore",
-                        },
-                        {
-                            text: "Threads",
-                            data: "patch_id_3"
-                        },
-                    ],
-                    data: patchData
-                }
-
-
-            });
-
-            $("#content").html(html);
-        }
-
-        const renderNameLink = function (data, cell, dataIndex, cellIndex) {
-            const entry = STATE.patchById[data[0].data]; // forgive me, it's a demo
-            cell.childNodes = [
-
-                {
-                    nodeName: "SPAN",
-                    attributes: {
-                        "style": `display: none;`,
-                    },
-                    childNodes: [
-                        {
-                            nodeName: "#text",
-                            data: entry.name // fix sort
-                        }
-                    ],
-
-                },
-                {
-                    nodeName: "A",
-                    attributes: {
-                        "href": `https://commitfest.postgresql.org/patch/${entry.patch_id}/`,
-                        "target": "_blank"
-                    },
-                    childNodes: [
-                        {
-                            nodeName: "#text",
-                            data: entry.name
-                        }
-                    ]
-                }
-            ]
-        }
-
-        const renderBeginnerScore = function (data, cell, dataIndex, cellIndex) {
-            console.log(data);
-            const score = Number(data[0].data);
-            const value = score >= BEGINNER_THRESHOLD ? 'Yes' : 'No';
-            cell.childNodes = [
-                {
-                    nodeName: "#text",
-                    data: value
-                }
-            ]
-
-        }
-
-        const renderThreads = function (data, cell, dataIndex, cellIndex) {
-            const entry = STATE.patchById[data[0].data]; // forgive me, it's a demo
-            const threads = STATE.threadsOfPatch[entry.id].map(thread => STATE.byThread[thread]);
-
-            const myCommitReasons = {};
-            for (const thread of threads) {
-                if (thread.predictedCommitters.a === STATE.contributor) {
-                    myCommitReasons[thread.id] = thread.predictedCommitters.terms_a;
-                }
-                else if (thread.predictedCommitters.b === STATE.contributor) {
-                    myCommitReasons[thread.id] = thread.predictedCommitters.terms_b;
-                }
-                else if (thread.predictedCommitters.c === STATE.contributor) {
-                    myCommitReasons[thread.id] = thread.predictedCommitters.terms_c;
-                }
-            }
-
-            cell.childNodes = [{
-                nodeName: "DIV",
-                childNodes: threads.flatMap(thread =>
-                ([
-                    {
-                        nodeName: "A",
-                        attributes: {
-                            "href": `https://postgr.es/m/${thread.id}/`,
-                            "target": "_blank"
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: "Link to thread"
-                            }
-                        ]
-                    },
-                    {
-                        nodeName: "BR"
-                    },
-                    {
-                        nodeName: "STRONG",
-                        attributes: {
-                            style: "margin-right: 10px;"
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: "[LLM] Thread status"
-                            }
-                        ]
-                    },
-                    {
-                        nodeName: "SPAN",
-                        attributes: {
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: thread.status
-                            }
-                        ]
-                    },
-                    {
-                        nodeName: "BR"
-                    },
-                    {
-                        nodeName: "STRONG",
-                        attributes: {
-                            style: "margin-right: 10px;"
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: "Suggested Committers:"
-                            }
-                        ]
-                    },
-                    {
-                        nodeName: "SPAN",
-                        attributes: {
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: displayName(thread.predictedCommitters.a) + " / " +
-                                    displayName(thread.predictedCommitters.b) + " / " +
-                                    displayName(thread.predictedCommitters.c)
-                            }
-                        ]
-                    },
-                    {
-                        nodeName: "BR"
-                    },
-                    ...(myCommitReasons[thread.id] ?
-                        [{
-                            nodeName: "STRONG",
-                            attributes: {
-                                style: "margin-right: 10px;"
-                            },
-                            childNodes: [
-                                {
-                                    nodeName: "#text",
-                                    data: "Topics in thread associated with me: "
-                                }
-                            ]
-                        },
-                        {
-                            nodeName: "SPAN",
-                            attributes: {
-                            },
-                            childNodes: [
-                                {
-                                    nodeName: "#text",
-                                    data: myCommitReasons[thread.id]
-                                }
-                            ]
-                        },
-                        {
-                            nodeName: "BR"
-                        },]
-                        : []),
-                    {
-                        nodeName: "STRONG",
-                        attributes: {
-                            style: "margin-right: 10px;"
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: "Author: "
-                            }
-                        ]
-                    },
-                    {
-                        nodeName: "SPAN",
-                        attributes: {
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: thread.stats.author
-                            }
-                        ]
-                    },
-                    {
-                        nodeName: "BR"
-                    },
-                    {
-                        nodeName: "STRONG",
-                        attributes: {
-                            style: "margin-right: 10px;"
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: "Also in thread: "
-                            }
-                        ]
-                    },
-                    {
-                        nodeName: "SPAN",
-                        attributes: {
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: thread.stats.reviewer_list.map(displayName).join(', ')
-                            }
-                        ]
-                    },
-                    {
-                        nodeName: "BR"
-                    },
-                    {
-                        nodeName: "STRONG",
-                        attributes: {
-                            style: "margin-right: 10px;"
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: "[LLM] Activity"
-                            }
-                        ]
-                    },
-                    {
-                        nodeName: "SPAN",
-                        attributes: {
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: thread.activity
-                            }
-                        ]
-                    },
-                    {
-                        nodeName: "BR"
-                    },
-                    {
-                        nodeName: "STRONG",
-                        attributes: {
-                            style: "margin-right: 10px;"
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: "Last message:"
-                            }
-                        ]
-                    },
-                    {
-                        nodeName: "SPAN",
-                        attributes: {
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: thread.stats.last_activity
-                            }
-                        ]
-                    },                    // {
-                    //     nodeName: "SPAN",
-                    //     attributes: {
-                    //         "style": "color: green; margin: 0px 5px;"
-                    //     },
-                    //     childNodes: [
-                    //         {
-                    //             nodeName: "#text",
-                    //             data: "+" 
-                    //         }
-                    //     ]
-                    // },
-                    {
-                        nodeName: "BR"
-                    },
-                    {
-                        nodeName: "STRONG",
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: "[LLM] Summary: "
-                            }
-
-                        ]
-
-                    },
-                    {
-                        nodeName: "SPAN",
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: thread.summary
-                            }
-
-                        ]
-
-                    },
-                    {
-                        nodeName: "BR"
-                    },
-                    {
-                        nodeName: "STRONG",
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: "Main Issue: "
-                            }
-
-                        ]
-
-                    },
-                    {
-                        nodeName: "SPAN",
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: thread.problem
-                            }
-
-                        ]
-
-                    },
-                    ...(thread.beginners.score >= BEGINNER_THRESHOLD ? [{
-                        nodeName: "BR"
-                    },
-                    {
-                        nodeName: "STRONG",
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: "For beginners: "
-                            }
-
-                        ]
-
-                    },
-                    {
-                        nodeName: "SPAN",
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: thread.beginners.explanation
-                            }
-
-                        ]
-
-                    }] : []),
-                    {
-                        nodeName: "BR"
-                    },
-                    {
-                        nodeName: "IMG",
-                        attributes: {
-                            src: "data/svg/" + thread.id + ".svg",
-                            height: "200"
-                        },
-                        childNodes: [
-                            {
-                                nodeName: "#text",
-                                data: "Last message:"
-                            }
-                        ]
-                    },
-
-
-                ]))
-            }]
-        }
-
-        function renderLastUpdated() {
-            $('#last-updated').html("<strong>Last updated</strong>: " + STATE.lastUpdated.toLocaleString() + "; any emails/commitfest entries after that time will not show up yet.");
-        }
-
-        function render() {
-            renderControls();
-            renderContent();
-            renderLastUpdated()
-        }
-
-        function constructLookups() {
-            // Various indexes to make certain things more efficient.
-            const patchById = {};
-            for (const patch of DATA.patches) {
-                patchById[patch.patch_id] = patch;
-            }
-
-            const threadsOfPatch = {};
-            for (const { patch, message } of DATA.patchMessage) {
-                if (!threadsOfPatch[patch]) {
-                    threadsOfPatch[patch] = [];
-                }
-                threadsOfPatch[patch].push(message);
-            }
-
-            const byThread = {};
-            for (const thread of DATA.threadSummaries) {
-                byThread[thread.id] = thread;
-            }
-            for (const thread of DATA.threadStats) {
-                if (!byThread[thread.message_id]) {
-                    // whoops...
-                    console.log("No summary for thread: " + thread.message_id);
-                    continue;
-                }
-                byThread[thread.message_id].stats = thread;
-            }
-            for (const thread of DATA.predictedCommitters) {
-                if (!byThread[thread.thread]) {
-                    // whoops...
-                    console.log("No summary for thread: " + thread.thread);
-                    continue;
-                }
-                byThread[thread.thread].predictedCommitters = thread;
-            }
-
-            for (const thread of DATA.beginners) {
-                byThread[thread.thread].beginners = thread;
-            }
-
-
-            const byContributor = {};
-            for (const contributor of DATA.contributors) {
-                byContributor[contributor.name] = contributor;
-            }
-
-
-            return {
-                patchById,
-                threadsOfPatch,
-                byThread,
-                byContributor,
-            }
-        }
-
-        (async () => {
-            // 1. Fetch principal data sources
-            const dataBaseURL = 'data/';
-            const [
-                threadSummaries,
-                rankings,
-                patches,
-                threadStats,
-                patchMessage,
-                predictedCommitters,
-                contributors,
-                beginners,
-            ] = await Promise.all([
-                'thread_summaries.json',
-                'contrib_tf_idf.json',
-                'patches.json',
-                'thread_stats.json',
-                'patch_message.json',
-                'predicted_committers.json',
-                'contributors.json',
-                'beginners.json',
-            ].map(url => fetch(dataBaseURL + url + "?nocache=" + Math.random().toString().slice(2))
-                .then(x => x.json())))
-
-            Object.assign(DATA, {
-                threadSummaries,
-                rankings,
-                patches,
-                threadStats,
-                patchMessage,
-                predictedCommitters,
-                contributors,
-                beginners,
-            });
-
-            Object.assign(STATE, constructLookups());
-
-            STATE.contributors = [... new Set(DATA.rankings.map(x => x.reviewer))];
-            STATE.lastUpdated = new Date(Math.max.apply(null, DATA.threadStats.map(thread => new Date(thread.last_activity))));
-            STATE.filter = FILTER_ENUM.RECOMMENDED;
-
-
-            // 2. Set up UX
-            render();
-
-            STATE.contributor = '';
-            // setContributor({ target: { value: 'Robert Haas' } }); // for testing only
-
+          }
+          return best;
         })();
-
-    </script>
+        patch.newReviewer = patch.threads.some(t => t.would_benefit_from_new_reviewer === 'YES') ? 'Yes' : 'No';
+        // Duplicate IDs to work around table library quirks.
+        patch.patch_id_2 = patch.patch_id;
+        patch.patch_id_3 = patch.patch_id;
+      }
+      patches.sort((a, b) => a.constructedRank - b.constructedRank);
+      patches.forEach((patch, index) => patch.rank = index + 1);
+      switch (STATE.filter) {
+        case FILTER_ENUM.ALL:
+          break;
+        case FILTER_ENUM.RECOMMENDED:
+          patches = patches.filter(patch => patch.newReviewer === 'Yes');
+          break;
+        case FILTER_ENUM.MY_REVIEWS:
+          patches = patches.filter(patch => patch.threads.some(t => t.stats.reviewer_list.some(r => r.toLowerCase() === STATE.contributor.toLowerCase())));
+          break;
+        case FILTER_ENUM.MY_PATCHES:
+          patches = patches.filter(patch => patch.threads.some(t => t.stats.author.toLowerCase() === STATE.contributor.toLowerCase()));
+          break;
+        case FILTER_ENUM.BEGINNERS:
+          patches = patches.filter(patch => patch.beginnerScore >= BEGINNER_THRESHOLD);
+          break;
+        default:
+          break;
+      }
+      return patches;
+    }
+    // Renders the patch data table using the simple-datatables library.
+    function renderContent() {
+      if (!STATE.contributor) {
+        $("#content").html('<h2>Please select your name to see your personalized patch review recommendations</h2>');
+        $("#table").html("");
+        return;
+      }
+      const patchData = getPatchData();
+      STATE.table = patchData;
+      $('#table').html("<div id='table_inner'></div>");
+      new window.simpleDatatables.DataTable('#table_inner', {
+        searchable: true,
+        fixedHeight: true,
+        columns: [
+          { select: 0 },
+          { 
+            select: 1, 
+            render: renderNameLink, 
+            searchMethod: (terms, cell) => {
+              const entry = STATE.patchById[cell.data[0].data];
+              return terms.every(term => entry.name.toLowerCase().includes(term.toLowerCase()));
+            }
+          },
+          { select: 3, ...(STATE.filter === FILTER_ENUM.BEGINNERS ? {} : { sort: "asc" }) },
+          { select: 4, render: renderBeginnerScore },
+          { select: 5, render: renderThreads }
+        ],
+        data: {
+          headings: [
+            { text: "ID", data: "patch_id" },
+            { text: "Name", data: 'patch_id_2' },
+            { text: "[LLM] New Reviewer?", data: "newReviewer" },
+            { text: "Rank for you", data: "rank" },
+            { text: "Suitable for a new reviewer?", data: "beginnerScore" },
+            { text: "Threads", data: "patch_id_3" },
+          ],
+          data: patchData
+        }
+      });
+    }
+    // Render a clickable link for the patch name.
+    const renderNameLink = function (data, cell) {
+      const entry = STATE.patchById[data[0].data];
+      cell.childNodes = [
+        { nodeName: "span", attributes: { style: "display:none;" }, childNodes: [{ nodeName: "#text", data: entry.name }] },
+        { nodeName: "a", attributes: { href: `https://commitfest.postgresql.org/patch/${entry.patch_id}/`, target: "_blank" }, childNodes: [{ nodeName: "#text", data: entry.name }] }
+      ];
+    }
+    // Render a yes/no value for beginner score.
+    const renderBeginnerScore = function (data, cell) {
+      const score = Number(data[0].data);
+      const value = score >= BEGINNER_THRESHOLD ? 'Yes' : 'No';
+      cell.childNodes = [{ nodeName: "#text", data: value }];
+    }
+    // Render detailed thread information.
+    const renderThreads = function (data, cell) {
+      const entry = STATE.patchById[data[0].data];
+      const threads = STATE.threadsOfPatch[entry.id].map(thread => STATE.byThread[thread]);
+      const myCommitReasons = {};
+      threads.forEach(thread => {
+        if (thread.predictedCommitters.a === STATE.contributor) {
+          myCommitReasons[thread.id] = thread.predictedCommitters.terms_a;
+        } else if (thread.predictedCommitters.b === STATE.contributor) {
+          myCommitReasons[thread.id] = thread.predictedCommitters.terms_b;
+        } else if (thread.predictedCommitters.c === STATE.contributor) {
+          myCommitReasons[thread.id] = thread.predictedCommitters.terms_c;
+        }
+      });
+      cell.childNodes = [{
+        nodeName: "div",
+        childNodes: threads.flatMap(thread => ([
+          { nodeName: "a", attributes: { href: `https://postgr.es/m/${thread.id}/`, target: "_blank" }, childNodes: [{ nodeName: "#text", data: "Link to thread" }] },
+          { nodeName: "br" },
+          { nodeName: "strong", attributes: { style: "margin-right: 10px;" }, childNodes: [{ nodeName: "#text", data: "[LLM] Thread status" }] },
+          { nodeName: "span", childNodes: [{ nodeName: "#text", data: thread.status }] },
+          { nodeName: "br" },
+          { nodeName: "strong", attributes: { style: "margin-right: 10px;" }, childNodes: [{ nodeName: "#text", data: "Suggested Committers:" }] },
+          { nodeName: "span", childNodes: [{ nodeName: "#text", data: displayName(thread.predictedCommitters.a) + " / " + displayName(thread.predictedCommitters.b) + " / " + displayName(thread.predictedCommitters.c) }] },
+          { nodeName: "br" },
+          ...(myCommitReasons[thread.id] ? [
+            { nodeName: "strong", attributes: { style: "margin-right: 10px;" }, childNodes: [{ nodeName: "#text", data: "Topics in thread associated with me: " }] },
+            { nodeName: "span", childNodes: [{ nodeName: "#text", data: myCommitReasons[thread.id] }] },
+            { nodeName: "br" }
+          ] : []),
+          { nodeName: "strong", attributes: { style: "margin-right: 10px;" }, childNodes: [{ nodeName: "#text", data: "Author: " }] },
+          { nodeName: "span", childNodes: [{ nodeName: "#text", data: thread.stats.author }] },
+          { nodeName: "br" },
+          { nodeName: "strong", attributes: { style: "margin-right: 10px;" }, childNodes: [{ nodeName: "#text", data: "Also in thread: " }] },
+          { nodeName: "span", childNodes: [{ nodeName: "#text", data: thread.stats.reviewer_list.map(displayName).join(', ') }] },
+          { nodeName: "br" },
+          { nodeName: "strong", attributes: { style: "margin-right: 10px;" }, childNodes: [{ nodeName: "#text", data: "[LLM] Activity" }] },
+          { nodeName: "span", childNodes: [{ nodeName: "#text", data: thread.activity }] },
+          { nodeName: "br" },
+          { nodeName: "strong", childNodes: [{ nodeName: "#text", data: "Last message:" }] },
+          { nodeName: "span", childNodes: [{ nodeName: "#text", data: thread.stats.last_activity }] },
+          { nodeName: "br" },
+          { nodeName: "strong", childNodes: [{ nodeName: "#text", data: "[LLM] Summary: " }] },
+          { nodeName: "span", childNodes: [{ nodeName: "#text", data: thread.summary }] },
+          { nodeName: "br" },
+          { nodeName: "strong", childNodes: [{ nodeName: "#text", data: "Main Issue: " }] },
+          { nodeName: "span", childNodes: [{ nodeName: "#text", data: thread.problem }] },
+          ...(thread.beginners.score >= BEGINNER_THRESHOLD ? [
+            { nodeName: "br" },
+            { nodeName: "strong", childNodes: [{ nodeName: "#text", data: "For beginners: " }] },
+            { nodeName: "span", childNodes: [{ nodeName: "#text", data: thread.beginners.explanation }] }
+          ] : []),
+          { nodeName: "br" },
+          { nodeName: "img", attributes: { src: "data/svg/" + thread.id + ".svg", height: "200" }, childNodes: [] },
+          { nodeName: "br" }
+        ]))
+      }];
+    }
+    // Update the "last updated" text.
+    function renderLastUpdated() {
+      $('#last-updated').html("<strong>Last updated</strong>: " + STATE.lastUpdated.toLocaleString() + "; any entries after that time are not yet shown.");
+    }
+    // Main render function.
+    function render() {
+      renderControls();
+      renderContent();
+      renderLastUpdated();
+    }
+    // Build lookup tables for efficient data access.
+    function constructLookups() {
+      const patchById = {};
+      DATA.patches.forEach(patch => {
+        patchById[patch.patch_id] = patch;
+      });
+      const threadsOfPatch = {};
+      DATA.patchMessage.forEach(({ patch, message }) => {
+        if (!threadsOfPatch[patch]) {
+          threadsOfPatch[patch] = [];
+        }
+        threadsOfPatch[patch].push(message);
+      });
+      const byThread = {};
+      DATA.threadSummaries.forEach(thread => {
+        byThread[thread.id] = thread;
+      });
+      DATA.threadStats.forEach(thread => {
+        if (byThread[thread.message_id]) {
+          byThread[thread.message_id].stats = thread;
+        } else {
+          console.log("No summary for thread: " + thread.message_id);
+        }
+      });
+      DATA.predictedCommitters.forEach(thread => {
+        if (byThread[thread.thread]) {
+          byThread[thread.thread].predictedCommitters = thread;
+        } else {
+          console.log("No summary for thread: " + thread.thread);
+        }
+      });
+      DATA.beginners.forEach(thread => {
+        if (byThread[thread.thread]) {
+          byThread[thread.thread].beginners = thread;
+        }
+      });
+      const byContributor = {};
+      DATA.contributors.forEach(contributor => {
+        byContributor[contributor.name] = contributor;
+      });
+      return { patchById, threadsOfPatch, byThread, byContributor };
+    }
+    // Initial data load.
+    (async () => {
+      const dataBaseURL = 'data/';
+      const [
+        threadSummaries,
+        rankings,
+        patches,
+        threadStats,
+        patchMessage,
+        predictedCommitters,
+        contributors,
+        beginners,
+      ] = await Promise.all([
+        'thread_summaries.json',
+        'contrib_tf_idf.json',
+        'patches.json',
+        'thread_stats.json',
+        'patch_message.json',
+        'predicted_committers.json',
+        'contributors.json',
+        'beginners.json',
+      ].map(url => fetch(dataBaseURL + url + "?nocache=" + Math.random().toString().slice(2))
+        .then(x => x.json())));
+  
+      Object.assign(DATA, { threadSummaries, rankings, patches, threadStats, patchMessage, predictedCommitters, contributors, beginners });
+      Object.assign(STATE, constructLookups());
+      STATE.contributors = [...new Set(DATA.rankings.map(x => x.reviewer))];
+      STATE.lastUpdated = new Date(Math.max(...DATA.threadStats.map(thread => new Date(thread.last_activity))));
+      STATE.filter = FILTER_ENUM.RECOMMENDED;
+  
+      render();
+      STATE.contributor = '';
+    })();
+  </script>
 </body>
-
 </html>
