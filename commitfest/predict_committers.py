@@ -45,8 +45,8 @@ def prepare_committer_training_data():
     for item, count in top_committers.most_common():
         print(f'{item}\t{count}')
 
-    # only consider committers with at least 50 commits
-    threads_by_active_committers = [(text, committer, thread) for text, committer, thread in threads_of_valid_len if top_committers[committer] >= 50]
+    # only consider committers with at least 20 commits
+    threads_by_active_committers = [(text, committer, thread) for text, committer, thread in threads_of_valid_len if top_committers[committer] >= 20]
 
     # with open('skip_terms.txt', 'r') as skip_file:
     #     skip_terms = skip_file.read().split('\n')
@@ -71,6 +71,14 @@ def prepare_committer_training_data():
 
     return training_data
 
+def committer_base_rates():
+    threads = get_valid_repo_threads('~/postgres/postgres', 10000)
+    top_committers = Counter([committers for text, committers, thread in threads])
+    base_rates = {committer: count / len(threads) for committer, count in top_committers.items()}
+
+    return base_rates
+
+
 def predict_committers(thread_ids):
     # build model on the fly.
     # doesn't take too long once the training data
@@ -78,6 +86,8 @@ def predict_committers(thread_ids):
     print("Getting data to train commiitter prediction model...")
     seed("foo")
     training_data = prepare_committer_training_data()
+    base_rates = committer_base_rates()
+
     shuffle(training_data)
     print("Training committer prediction model...")
     model, vectorizer, _stats = train_committer_model(training_data)
@@ -102,8 +112,9 @@ def predict_committers(thread_ids):
 
     # And now we run the model. Not multithreaded yet
     predicted_committers = {}
+    extended_predictions = {}
     for thread, text in summarized_threads.items():
-        prediction = predict_top_committers(model, vectorizer, text, 3)
+        prediction = predict_top_committers(model, vectorizer, text, 10)
         a, score_a, terms_a = prediction[0]
         b, score_b, terms_b = prediction[1]
         c, score_c, terms_c = prediction[2]
@@ -118,16 +129,23 @@ def predict_committers(thread_ids):
             "score_c": score_c,
             "terms_c": ', '.join(terms_c),
         }
+        extended_predictions[thread] = prediction
 
-    return predicted_committers
+    return predicted_committers, { "predictions": extended_predictions, "base_rates": base_rates }
 
 
 def main():
     seed("foo")
     training_data = prepare_committer_training_data()
 
+    base_rates = committer_base_rates()
+
+    for committer, rate in base_rates.items():
+        print(committer, rate)
+
     shuffle(training_data)
-    train_committer_model(training_data)
+    model, vectorizer, stats = train_committer_model(training_data)
+    
 
     # terms = compute_tfidf_top_terms(threads, 1000)
     # # for manual inspection

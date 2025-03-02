@@ -8,6 +8,7 @@ from attachments import analyze_attachment
 from worker import run_jobs
 from write_csv import dict_to_csv, array_of_dict_to_csv
 from pprint import pprint
+import json
 
 
 def analyze_commitfest(id):  
@@ -27,7 +28,7 @@ def analyze_commitfest(id):
     threads = run_jobs(analyze_thread, message_ids, max_workers=5)
 
     # target committer analysis
-    predicted_committers = predict_committers(message_ids)
+    predicted_committers, extended_predictions = predict_committers(message_ids)
 
     thread_summaries = {id: thread["explanation"] for id, thread in threads.items()}
     thread_stats = {id: thread["stats"] for id, thread in threads.items()}
@@ -66,6 +67,10 @@ def analyze_commitfest(id):
     array_of_dict_to_csv(stories_flattened, "stories.csv")
     dict_to_csv(beginners, "beginners.csv")
     array_of_dict_to_csv(csv_of_contributor_names, "contributor_names.csv")
+
+    with open('extended_predictions.json', 'w') as f:
+        # temporary dump to use for offline analysis
+        json.dump(extended_predictions, f)
 
 
 if __name__ == '__main__':

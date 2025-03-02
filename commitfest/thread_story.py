@@ -478,6 +478,8 @@ the ideal patch for a new person is one that's not a deeply bad idea in some way
     Also, if we are currently waiting on the author to respond to other feedback, we
     probably shouldn't assign it to a new reviewer, either.
 
+    When you are considering thread attachments, they may be farther up in the thread.
+
     Now, here is the summary of the thread: 
 
     ```

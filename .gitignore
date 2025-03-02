@@ -5,3 +5,4 @@ __pycache__
 *.csv
 repository/*.json
 commitfest/*.svg
+commitfest/*.json
