@@ -1,6 +1,8 @@
 from repo import get_threads_of_last_n_commits
 from analyze_thread import parse_thread, summarize_thread_for_predicting_committer
 from committer_model import train_committer_model, predict_top_committers
+from distribute_committers import fair_committer_assignments
+
 from random import shuffle, seed
 
 from cache import cache_results
@@ -115,6 +117,14 @@ def predict_committers(thread_ids):
     extended_predictions = {}
     for thread, text in summarized_threads.items():
         prediction = predict_top_committers(model, vectorizer, text, 10)
+        extended_predictions[thread] = prediction
+
+    # Re-balance predictions
+    prediction_data = { "predictions": extended_predictions, "base_rates": base_rates }
+    fair_predictions = fair_committer_assignments(prediction_data)
+
+    for thread, text in summarized_threads.items():
+        prediction = fair_predictions[thread]
         a, score_a, terms_a = prediction[0]
         b, score_b, terms_b = prediction[1]
         c, score_c, terms_c = prediction[2]
@@ -129,9 +139,9 @@ def predict_committers(thread_ids):
             "score_c": score_c,
             "terms_c": ', '.join(terms_c),
         }
-        extended_predictions[thread] = prediction
 
-    return predicted_committers, { "predictions": extended_predictions, "base_rates": base_rates }
+
+    return predicted_committers, prediction_data
 
 
 def main():
