@@ -757,7 +757,8 @@
                 'predicted_committers.json',
                 'contributors.json',
                 'beginners.json',
-            ].map(url => fetch(dataBaseURL + url).then(x => x.json())))
+            ].map(url => fetch(dataBaseURL + url + "?nocache=" + Math.random().toString().slice(2))
+                .then(x => x.json())))
 
             Object.assign(DATA, {
                 threadSummaries,
