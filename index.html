@@ -322,7 +322,7 @@
       cell.childNodes = [{
         nodeName: "div",
         childNodes: threads.flatMap(thread => ([
-          { nodeName: "a", attributes: { href: `https://postgr.es/m/${thread.id}/`, target: "_blank" }, childNodes: [{ nodeName: "#text", data: "Link to thread" }] },
+          { nodeName: "a", attributes: { href: `https://postgr.es/m/${thread.id}`, target: "_blank" }, childNodes: [{ nodeName: "#text", data: "Link to thread" }] },
           { nodeName: "br" },
           { nodeName: "strong", attributes: { style: "margin-right: 10px;" }, childNodes: [{ nodeName: "#text", data: "[LLM] Thread status" }] },
           { nodeName: "span", childNodes: [{ nodeName: "#text", data: thread.status }] },
