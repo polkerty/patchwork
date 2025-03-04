@@ -10,12 +10,12 @@ def extract_commit_author(commit):
     """
     # Regex to match: Author: Name <email@something>
     # This will capture the author's name in group(1) and email in group(2)
-    author_override_regex = re.compile(r'^Author:\s+(.*?)\s+<([^>]+)>', re.MULTILINE)
+    author_override_regex = re.compile(r'^Author:\s+(.*?)(\s+<([^>]+)>)?', re.MULTILINE)
     match = author_override_regex.search(commit.message)
 
     if match:
         extracted_name = match.group(1).strip()
-        extracted_email = match.group(2).strip()
+        extracted_email = match.group(2).strip() if match.group(2) else 'no_email@none.com'
         return extracted_name, extracted_email
     else:
         # Fallback to commit metadata
