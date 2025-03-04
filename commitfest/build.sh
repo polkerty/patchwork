@@ -1,5 +1,6 @@
 python analyze_commitfest.py        # scrape commitfest site, postgres mailing list, and perform LLM analysis. Output data as CSVs
 psql -p 6565 -f normalize_author_names.sql     # internal version of names
+psql -p 6565 -f ../repository/ingest_table_stats.sql     # analyze repo for activity
 psql -p 6565 -f data_ingest.sql     # upload CSVs to local postgres
 psql -p 6565 -f ../repository/tf-idf.sql      # analyze postgres repo for usage and build patch recommendations
 
