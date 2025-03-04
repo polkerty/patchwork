@@ -2,84 +2,101 @@ import os
 import re
 import json
 from git import Repo
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
-def extract_commit_author(commit):
-    """
-    Look for an 'Author: XYZ <xyz@example.com>' line in the commit message.
-    If found, return (name, email). Otherwise, fall back to commit.author.
-    """
-    # Regex to match: Author: Name <email@something>
-    # This will capture the author's name in group(1) and email in group(2)
-    author_override_regex = re.compile(r'^Author:\s+(.*?)(\s+<([^>]+)>)?', re.MULTILINE)
-    match = author_override_regex.search(commit.message)
+# Global variable to store the repo handle per worker
+global_repo = None
 
-    if match:
-        extracted_name = match.group(1).strip()
-        extracted_email = match.group(2).strip() if match.group(2) else 'no_email@none.com'
-        return extracted_name, extracted_email
-    else:
-        # Fallback to commit metadata
-        return commit.author.name, commit.author.email
-
-def collect_repo_history(repo_path, output_path):
+def init_worker(repo_path):
     """
-    Given the path to a Git repository, iterate through all commits and gather:
-      - Author (possibly overridden by 'Author:' line in commit message)
-      - Files changed
-      - Lines added and deleted
-      - Commit SHA
-
-    Store the entire history as a list of lists, and write as JSON to output_path.
+    Initialize each worker by opening the repository only once.
     """
-    repo = Repo(repo_path)
-    # In some cases you might want '--all' explicitly, or you can just do
-    # `repo.iter_commits('--all')`
-    all_commits = list(repo.iter_commits('master'))
+    global global_repo
+    global_repo = Repo(os.path.expanduser(repo_path))
+
+def extract_commit_associations(commit):
+    """
+    Extract associated people from the commit message.
+    Looks for lines starting with one of these keys (case-insensitive):
+      - Author:
+      - Reported-by:
+      - Reviewed-by:
+      - Co-authored-by:
+    Returns a list of tuples (name, email, association_type).
+    """
+    associations = []
+    assoc_keys = ["Author", "Reported-by", "Reviewed-by", "Co-authored-by"]
+    pattern = re.compile(
+        r'^(%s):\s+(.*?)(\s+<([^>]+)>)?\s*$' % '|'.join(assoc_keys),
+        re.IGNORECASE | re.MULTILINE
+    )
+    for match in pattern.finditer(commit.message):
+        assoc_type = match.group(1).strip()
+        name = match.group(2).strip()
+        email = match.group(4).strip() if match.group(4) else 'no_email@none.com'
+        associations.append((name, email, assoc_type))
+    return associations
+
+def process_commit(commit_hexsha):
+    """
+    Process a single commit using the global repository handle.
+    Extract associations, stats, and return a list of records.
+    """
+    commit = global_repo.commit(commit_hexsha)
+
+    # Extract associations from the commit message.
+    associations = extract_commit_associations(commit)
+    # Always include commit.author entry.
+    associations.append((commit.author.name, commit.author.email, "Commit Author"))
     
-    history_data = []
+    stats = commit.stats.files
+    commit_date_iso = commit.committed_datetime.isoformat()
+    records = []
 
-    pos = 0
-
-    for commit in all_commits:
-        # Extract overriding author if present
-        author_name, author_email = extract_commit_author(commit)
-        author_str = f"{author_name} <{author_email}>"
-
-        # The commit stats has 'files' dict with file paths and insertions/deletions
-        # commit.stats.files -> { 'path/to/file': { 'insertions': X, 'deletions': Y, ... }, ... }
-        stats = commit.stats.files
-
-        commit_date_iso = commit.committed_datetime.isoformat()
-
-        # For each file changed in this commit, collect stats
-        for filepath, file_stats in stats.items():
-            additions = file_stats.get('insertions', 0)
-            deletions = file_stats.get('deletions', 0)
-
-            # Append a record in the requested format
-            # [Author, Filepath, Additions, Deletions, CommitID]
-            history_data.append([
-                author_str,
+    for filepath, file_stats in stats.items():
+        additions = file_stats.get('insertions', 0)
+        deletions = file_stats.get('deletions', 0)
+        for name, email, assoc_type in associations:
+            person_str = f"{name} <{email}>"
+            records.append([
+                person_str,
                 filepath,
                 additions,
                 deletions,
                 commit.hexsha,
                 commit_date_iso,
+                assoc_type
             ])
+    return records
 
-        pos += 1
-        if pos % 1000 == 0:
-            print(f"Progress: commit {pos} / {len(all_commits)} | Total file count: {len(history_data)}")
-            # Write out to JSON
-            with open(output_path, 'w', encoding='utf-8') as f:
-                json.dump(history_data, f, indent=2)
+def collect_repo_history(repo_path, output_path, max_workers=4):
+    """
+    Collect repository history in parallel using a process pool.
+    Uses an initializer to avoid re-opening the repository on every commit.
+    """
+    # Open the repository once in the main process to get commit hexshas
+    repo = Repo(os.path.expanduser(repo_path))
+    commit_hexshas = [commit.hexsha for commit in repo.iter_commits('master')]
+    history_data = []
 
-    print(f"Done! Wrote {len(history_data)} lines of commit-file history to {output_path}")
+    with ProcessPoolExecutor(max_workers=max_workers,
+                             initializer=init_worker,
+                             initargs=(repo_path,)) as executor:
+        futures = {executor.submit(process_commit, hexsha): hexsha for hexsha in commit_hexshas}
+        for i, future in enumerate(as_completed(futures), 1):
+            try:
+                result = future.result()
+                history_data.extend(result)
+            except Exception as e:
+                print(f"Error processing commit {futures[future]}: {e}")
+            if i % 1000 == 0:
+                print(f"Processed {i}/{len(commit_hexshas)} commits")
+    
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(history_data, f, indent=2)
+    print(f"Done! Wrote {len(history_data)} records to {output_path}")
 
 if __name__ == "__main__":
-    # Path to the local cloned Git repository
-    repo_path = "~/postgres/postgres"
-    # Path where you want the JSON written
-    output_path = "repo_history.json"
-
+    repo_path = "~/postgres/postgres"  # Path to your repository
+    output_path = "repo_history.json"  # Output JSON file
     collect_repo_history(repo_path, output_path)
